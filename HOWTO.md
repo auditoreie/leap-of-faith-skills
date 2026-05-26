@@ -63,3 +63,25 @@ Use o critério: **se você teria que explicar o mesmo padrão duas vezes pro Cl
 Não vire skill: instruções específicas de um projeto (essas vão no `CLAUDE.md` daquele repo).
 
 Veja `docs/creating-skills.md` pra o processo.
+
+## Padrão alternativo: skill project-local
+
+Algumas skills são valiosas mas **não cabem aqui** porque amarram em detalhes de um único repo (portas, paths, comandos, tenants seed). O lugar delas é `<projeto>/.claude/skills/<nome>/SKILL.md` — versionado junto com o código que ela orquestra.
+
+**Exemplo canônico:** `fechapacote-app/.claude/skills/start/` — sobe o env do FechaPacote (Docker / local, cross-OS, com seed). Específica do projeto, mas com a mesma disciplina das skills daqui:
+
+- Frontmatter com triggers de intent claros (`rodar`, `subir`, `iniciar`, `boot`, `start`)
+- Seções "Quando usar" / "Quando NÃO usar" (esta última cita skills concorrentes — `/verify`, `/run` — pra evitar invocação errada)
+- Token discipline: SKILL.md ≤ 150 linhas, detalhes raros (Windows nativo) em arquivo lazy-load (`windows.md`)
+- Sem side-effects automáticos: confirma antes de `docker compose up` pesado, falha explícito se Docker faltar
+
+Use isso como template quando o projeto tiver setup não-trivial. Não precisa copiar — basta seguir a estrutura (frontmatter + seções + lazy-load) e adaptar.
+
+**Como decidir entre aqui vs project-local:**
+
+| Sinal | Vai onde |
+|---|---|
+| Funciona em 2+ repos sem alterar comandos/paths/portas | `auditore-skills/skills/` |
+| Hardcoda algo do repo (porta, tenant, endpoint, script `pnpm -F …`) | `<repo>/.claude/skills/` |
+| Orquestra fluxo cross-project (ADRs, sync com Notion/ClickUp) | `auditore-skills/skills/` |
+| Mistura: regra geral + detalhes do repo | Skill genérica aqui + skill fina no repo que a chama |
