@@ -37,6 +37,17 @@ Orquestra **decisões de engenharia** (ADRs versionados) e **trabalho ativo** (t
 
 Detalhes completos em `skills/project-ledger/SKILL.md` e `skills/project-ledger/conventions.md` (este último é lazy-load — só leia quando precisar de detalhe).
 
+### `plane-onboarding`
+
+Configura a máquina de um dev para trabalhar com o Plane da Sintetiza AI: coleta a **API Key pessoal**,
+escreve `~/.claude/plane_config.json` (chmod 600), conecta o MCP do Plane e explica o fluxo de
+`/iniciar-task` / `/fechar-task`.
+
+**Quando usar:** primeiro setup de um dev, "configurar Plane", "setup da minha API key do Plane",
+"conectar o MCP do Plane". Cada dev usa a **própria** chave — nunca compartilhada.
+
+Detalhes em `skills/plane-onboarding/SKILL.md`.
+
 ## Como usar em um projeto novo
 
 1. `cd ~/seu/repo`
