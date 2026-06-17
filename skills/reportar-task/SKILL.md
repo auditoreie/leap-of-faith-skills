@@ -54,10 +54,10 @@ Posta um **comentário de report** numa work item do Plane via REST API. É a op
      "https://api.plane.so/api/v1/workspaces/sintetizaai/projects/$PROJECT_ID/issues/$ISSUE_ID/comments/"
    ```
 
-6. **(Opcional, opt-in) Worklog de tempo.** Só com `--time <min>`. Cria um worklog — **não** fecha a task, e os worklogs **somam** (pode haver vários por issue):
+6. **(Opcional, opt-in) Worklog de tempo.** Só com `--time <min>`. Cria um worklog no **timesheet nativo** da issue — **não** fecha a task, e os worklogs **somam** (pode haver vários por issue). `duration` é um **inteiro em minutos** (não use `"87m"` — a API rejeita com `A valid integer is required`):
    ```bash
    curl -s -X POST -H "X-API-Key: $API_KEY" -H "Content-Type: application/json" \
-     -d "{\"description\": \"Sessão Claude Code\", \"logged_by\": \"claude-code\", \"duration\": \"<MIN>m\"}" \
+     -d "{\"description\": \"Sessão Claude Code\", \"logged_by\": \"claude-code\", \"duration\": <MIN>}" \
      "https://api.plane.so/api/v1/workspaces/sintetizaai/projects/$PROJECT_ID/issues/$ISSUE_ID/worklogs/"
    ```
 
@@ -74,6 +74,10 @@ O Plane **não tem** campo nativo de tokens/custo — eles entram **no corpo do 
   Pegue tokens + custo USD da sessão/dia correspondente. **Confirme o valor com o usuário** antes de escrever no comentário (não invente número, não estime de memória).
 - Inclua no `comment_html` algo como: `<p>⏱ Tempo: <N>min · 🪙 Tokens: <X> · 💰 Custo IA: US$ <Y> (Opus 4.8, via ccusage)</p>`.
 - Tempo informado em `--time` vira worklog (passo 6) **e** é citado no comentário pra ficar legível.
+
+## Notas de API
+
+- **Use `curl` pras chamadas, não `python urllib`.** A API do Plane fica atrás de Cloudflare, que bloqueia o User-Agent padrão do urllib com `403 error code: 1010`. `curl` passa. Para montar JSON com acentos/HTML, gere o payload com `python -c json.dump(...)` num arquivo e poste com `curl --data @arquivo`.
 
 ## Opções
 
