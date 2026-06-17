@@ -61,19 +61,34 @@ Posta um **comentário de report** numa work item do Plane via REST API. É a op
      "https://api.plane.so/api/v1/workspaces/sintetizaai/projects/$PROJECT_ID/issues/$ISSUE_ID/worklogs/"
    ```
 
-7. **(Opcional, opt-in) Mudar estado.** Só se pedido (`--state "<nome>"`): liste estados (`.../projects/$PROJECT_ID/states/`), case o nome, e faça `PATCH .../issues/$ISSUE_ID/ {"state":"<state_id>"}`.
+7. **(Opcional) Gravar nos campos personalizados Custo IA / Tokens IA.** Com `--cost`/`--tokens`, além de citar no comentário, grave nos custom fields nativos (DECIMAL) que existem em **todos os projetos** no tipo Task default: `Custo IA (US$)` e `Tokens IA`.
+   - Pegue os IDs das propriedades no tipo da issue:
+     ```bash
+     curl -s -H "X-API-Key: $API_KEY" \
+       "https://api.plane.so/api/v1/workspaces/sintetizaai/projects/$PROJECT_ID/issue-types/$TYPE_ID/issue-properties/"
+     ```
+     (`$TYPE_ID` = o `issue_type` da issue, ou o tipo com `is_default:true`.) Mapeie `display_name → id`. Se os campos não existirem nesse projeto, pule e avise.
+   - Grave o valor (POST cria, **valor numérico**, não string; se já existe, use PATCH no mesmo path):
+     ```bash
+     curl -s -X POST -H "X-API-Key: $API_KEY" -H "Content-Type: application/json" \
+       -d "{\"value\": <NUMERO>}" \
+       "https://api.plane.so/api/v1/workspaces/sintetizaai/projects/$PROJECT_ID/work-items/$ISSUE_ID/work-item-properties/$PROP_ID/values/"
+     ```
+     ⚠️ Use o path `work-items/.../work-item-properties/.../values/` (o alias `issues/.../issue-properties/.../values/` rejeita com 405/500). `value` é número (ex: `9.32`), não `"9.32"`.
+
+8. **(Opcional, opt-in) Mudar estado.** Só se pedido (`--state "<nome>"`): liste estados (`.../projects/$PROJECT_ID/states/`), case o nome, e faça `PATCH .../issues/$ISSUE_ID/ {"state":"<state_id>"}`.
 
 ## Tempo e custo de tokens
 
-O Plane **não tem** campo nativo de tokens/custo — eles entram **no corpo do comentário** (passo 4). Tempo é separado e nativo (worklog, passo 6).
+Tempo → worklog nativo (passo 6). Custo/tokens → campos personalizados nativos `Custo IA (US$)` e `Tokens IA` (passo 7) **e** citados no corpo do comentário pra leitura rápida.
 
-- **Custo via `ccusage` (NÃO use taxa fixa por token).** A tarifa varia por modelo (Opus ≫ Sonnet) e por input/output/cache. Rode no terminal e leia o custo em USD já calculado:
+- **Custo via `ccusage` (NÃO use taxa fixa por token).** A tarifa varia por modelo (Opus ≫ Sonnet) e por input/output/cache. Rode no terminal e leia o custo USD já calculado:
   ```bash
   ccusage   # ou: npx ccusage@latest
   ```
-  Pegue tokens + custo USD da sessão/dia correspondente. **Confirme o valor com o usuário** antes de escrever no comentário (não invente número, não estime de memória).
+  Pegue tokens + custo USD da sessão/dia correspondente. **Confirme o valor com o usuário** antes de gravar (não invente número, não estime de memória).
 - Inclua no `comment_html` algo como: `<p>⏱ Tempo: <N>min · 🪙 Tokens: <X> · 💰 Custo IA: US$ <Y> (Opus 4.8, via ccusage)</p>`.
-- Tempo informado em `--time` vira worklog (passo 6) **e** é citado no comentário pra ficar legível.
+- `Tokens IA` é um único número — use o **total** (input + output) salvo no campo, mesmo que o comentário detalhe in/out.
 
 ## Notas de API
 
@@ -86,7 +101,7 @@ O Plane **não tem** campo nativo de tokens/custo — eles entram **no corpo do 
 | (texto livre após o ID) | Usa como corpo do report. |
 | `--pr <url>` | Anexa o link do PR no comentário. |
 | `--time <min>` | Cria worklog de `<min>` minutos (opt-in). Não fecha a task. |
-| `--cost <usd>` / `--tokens <n>` | Inclui custo/tokens no comentário. Se ausente e o usuário quiser custo, rode `ccusage` e confirme. |
+| `--cost <usd>` / `--tokens <n>` | Grava nos campos `Custo IA (US$)` / `Tokens IA` (passo 7) **e** cita no comentário. Se ausente e o usuário quiser custo, rode `ccusage` e confirme. |
 | `--state "<nome>"` | Também move a issue pra esse estado (opt-in). |
 | sem texto | Você gera o resumo da sessão e confirma antes de postar. |
 
