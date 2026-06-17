@@ -7,8 +7,6 @@ Este conteúdo vive **espelhado em dois repositórios**, um por org, porque Audi
 | **Primário** (referência) | `auditoreie/team-skills` | `origin` |
 | **Espelho** (também recebe PRs) | `Sintetiza-AI/team-skills` | `sintetiza` |
 
-> Antes da renomeação: o primário ainda pode estar como `auditoreie/auditore-skills`.
-
 ## Por que não é um repo só
 
 O ideal seria **um repo canônico + acesso cruzado** (convidar o time da outra org). Como não há seats compartilháveis entre as orgs, isso não é possível — daí os dois repos. O risco é **divergência**; este ritual existe pra evitar isso.
