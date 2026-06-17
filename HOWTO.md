@@ -1,25 +1,28 @@
-# HOWTO — usar as skills da Auditore
+# HOWTO — usar as skills do time
 
 ## Instalação (uma vez por máquina)
 
 ```bash
-~/auditore-skills/install.sh
+~/team-skills/install.sh
 ```
 
 O script:
 - Cria `~/.claude/skills/` se não existir
-- Cria um symlink por skill apontando deste repositório para `~/.claude/skills/`
-- Não sobrescreve nada sem confirmação (mostra um diff e pergunta)
+- Recursa em `skills/**/SKILL.md` (suporta agrupamento por ferramenta, ex: `skills/plane/reportar-task/`)
+- Cria um symlink por skill (nome = basename da pasta da skill) apontando deste repositório para `~/.claude/skills/`
+- Não sobrescreve symlink divergente sem confirmação
 
-Atualizar versão depois é só `git pull` no `~/auditore-skills/`.
+Atualizar versão depois é só `git pull` no `~/team-skills/`.
 
 ## Como o Claude Code descobre as skills
 
-Skills são detectadas em `~/.claude/skills/<nome>/SKILL.md`. Cada SKILL.md tem frontmatter (`name`, `description`) que o Claude lê no início da sessão. A skill aparece na lista do `/` ou é invocada por intent (palavras-chave na `description`).
+Skills são detectadas em `~/.claude/skills/<nome>/SKILL.md`. Cada SKILL.md tem frontmatter (`name`, `description`) que o Claude lê no início da sessão. A skill aparece na lista do `/` ou é invocada por intent (palavras-chave na `description`). O nome do symlink é o **basename da pasta da skill** — o agrupamento por ferramenta (`skills/plane/...`) é só organização do repo, não muda o nome instalado.
 
 ## Skills disponíveis
 
-### `project-ledger`
+### Genéricas
+
+#### `project-ledger`
 
 Orquestra **decisões de engenharia** (ADRs versionados) e **trabalho ativo** (tasks locais) em qualquer projeto.
 
@@ -30,23 +33,22 @@ Orquestra **decisões de engenharia** (ADRs versionados) e **trabalho ativo** (t
 - Sincronizar tasks com Notion ou ClickUp (`sync notion`, `sync clickup`) via MCP
 - Conferir status atual (`status`)
 
-**Filosofia:**
-- ADRs vivem em `docs/adr/` versionado no git. Append-only, decisões aceitas.
-- Tasks vivem em `.claude/tasks/` local, gitignored. Mutáveis, working log.
-- Ao fechar uma task, ela vira ADR (sem reler código — task é o input).
+Detalhes em `skills/project-ledger/SKILL.md` (+ `conventions.md`, lazy-load).
 
-Detalhes completos em `skills/project-ledger/SKILL.md` e `skills/project-ledger/conventions.md` (este último é lazy-load — só leia quando precisar de detalhe).
+### Ferramenta: Plane (`skills/plane/`)
 
-### `plane-onboarding`
+Workflow de tasks no Plane. Cada dev usa a **própria** API key (`~/.claude/plane_config.json`).
 
-Configura a máquina de um dev para trabalhar com o Plane da Sintetiza AI: coleta a **API Key pessoal**,
-escreve `~/.claude/plane_config.json` (chmod 600), conecta o MCP do Plane e explica o fluxo de
-`/iniciar-task` / `/fechar-task`.
+- **`plane-onboarding`** — primeiro setup: coleta a API key pessoal, escreve `~/.claude/plane_config.json` (chmod 600), conecta o MCP do Plane e explica o fluxo. Gatilhos: "configurar Plane", "setup da minha API key do Plane".
+- **`iniciar-task`** — abre a task (move pra In Progress), inicia cronômetro e começa a executar. Ex: `/iniciar-task SINTE-25`.
+- **`reportar-task`** — reporta/comenta na task; opcional worklog de tempo e custo (via `ccusage`) e campos personalizados `Custo IA (US$)`/`Tokens IA`; **não fecha**. Resolve o projeto pelo prefixo do ID (multi-projeto). Ex: `/reportar-task ATLASEDUCA-1 --pr <url>`.
+- **`fechar-task`** — encerra: grava worklog, tokens, custo e comentário de resumo.
 
-**Quando usar:** primeiro setup de um dev, "configurar Plane", "setup da minha API key do Plane",
-"conectar o MCP do Plane". Cada dev usa a **própria** chave — nunca compartilhada.
+Fronteira: `iniciar` (começa) → `reportar` (meio, sem fechar) → `fechar` (encerra).
 
-Detalhes em `skills/plane-onboarding/SKILL.md`.
+### Ferramenta: Meta WhatsApp (`skills/meta-waba/`)
+
+- **`meta-waba`** — referência da WhatsApp Business Platform (Cloud API/Graph API/WABA): templates, números, webhooks HMAC, Flows, analytics, Embedded Signup, códigos de erro. Use em qualquer projeto que integre WhatsApp Business da Meta. Detalhe em `skills/meta-waba/references/`.
 
 ## Como usar em um projeto novo
 
@@ -61,7 +63,7 @@ Detalhes em `skills/plane-onboarding/SKILL.md`.
 Se você quiser customizar uma skill **só na sua máquina**, **não edite o symlink** — clone a skill localmente:
 
 ```bash
-cp -r ~/auditore-skills/skills/project-ledger ~/.claude/skills/project-ledger-local
+cp -r ~/team-skills/skills/project-ledger ~/.claude/skills/project-ledger-local
 rm ~/.claude/skills/project-ledger  # remove o symlink
 ```
 
@@ -69,8 +71,8 @@ E edite `~/.claude/skills/project-ledger-local/` à vontade. Pra voltar ao compa
 
 ## Quando vale a pena escrever uma skill nova aqui
 
-Use o critério: **se você teria que explicar o mesmo padrão duas vezes pro Claude em projetos diferentes, vira skill aqui.**
+Use o critério: **se você teria que explicar o mesmo padrão duas vezes pro Claude em projetos diferentes, vira skill aqui.** Se é específica de uma ferramenta, agrupe sob `skills/<ferramenta>/`.
 
-Não vire skill: instruções específicas de um projeto (essas vão no `CLAUDE.md` daquele repo).
+Não vire skill: instruções específicas de um projeto (essas vão no `CLAUDE.md` daquele repo, ou em `.claude/skills/` do próprio repo — como `dev-up`/`dev-restart` do WhiteLabel).
 
 Veja `docs/creating-skills.md` pra o processo.
