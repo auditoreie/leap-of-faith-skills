@@ -40,6 +40,24 @@ Decida delegar vs fazer inline por esta tabela:
 ### 3. Sintetizar e executar (Opus)
 Consuma as conclusões, resolva os trade-offs, aplique os edits que exigem julgamento. É aqui — e só aqui — que o Opus agrega valor que um modelo barato não daria.
 
+## Escada de escalonamento (custo crescente)
+Escale só quando o degrau abaixo não dá conta — cada um custa mais que o anterior:
+1. **Inline (Opus)** — julgamento, poucos passos, arquivo já conhecido.
+2. **Subagente único** (`Explore`/`sonnet`/`haiku`) — uma descoberta ou trabalho mecânico isolado.
+3. **Fan-out de Agents** em mensagem única — vários trabalhos **independentes**; você agrega as conclusões uma vez.
+4. **`Workflow`** — orquestração determinística sobre **muitos itens** (pipeline/migração/auditoria) ou verificação adversarial multi-agente. Custa MUITO (dezenas de agentes): só vale quando o **volume amortiza o overhead**, e exige **opt-in explícito** do usuário ("use workflow"/ultracode). Nunca escale sozinho.
+
+Quando o Workflow for a escolha certa, corte o custo dele: `pipeline()` (sem barreira) > `parallel()`; `model`/`effort` baratos nos stages mecânicos, caro só no verify/síntese; `worktree` só se agentes mutam em paralelo; `budget` pra escalar profundidade ao alvo de tokens. Degrau alto demais queima tokens; baixo demais gargala. Entre 3 e 4 na dúvida, fique no 3 e **proponha** o 4.
+
+## Loops — agendar em vez de repetir
+Prestes a repetir a mesma ação em ciclo (poll de estado externo, "fica checando X", "repete até Y")? **Proponha um loop**, não faça na mão:
+- `/loop <intervalo> <comando>` — recorrente em intervalo fixo (ex: `/loop 5m /babysit-prs`).
+- `/loop <comando>` sem intervalo — auto-pace: o modelo decide quando reacordar.
+- **Não** faça loop se o harness já te re-invoca ao fim de um trabalho em background (poll é desperdício). Loop é pra estado que o harness **não** notifica: CI, deploy, fila remota, cron externo.
+- Cadência: <5min mantém o cache quente; ≥5min paga cache miss. **Nunca 300s** (pior dos dois) — use <270s ou ≥1200s.
+
+Regra: repetição manual agendável/pollável ≥2–3 vezes → pare e ofereça o loop com o comando pronto. Repetir na mão é anti-Fable.
+
 ## Regra de ouro dos tokens
 - `Read` com `offset`/`limit` no entorno da mudança > arquivo inteiro. Nunca releia o que acabou de editar pra "conferir" (Edit/Write já teria falhado).
 - Não re-derive fato já estabelecido na conversa. Specs/notas longas → arquivo `.md`, não chat.
