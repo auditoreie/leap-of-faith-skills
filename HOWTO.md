@@ -35,6 +35,19 @@ Orquestra **decisões de engenharia** (ADRs versionados) e **trabalho ativo** (t
 
 Detalhes em `skills/project-ledger/SKILL.md` (+ `conventions.md`, lazy-load).
 
+#### `desmond`
+
+Modo **tri-modelo** do Opus (acionamento explícito `/desmond`): planeja com a precisão do **Mythos**, economiza tokens com a disciplina do **Fable** e decide/sintetiza com a força do **Opus**, orquestrando subagentes pra **máximo resultado por token**.
+
+**Quando usar:**
+- Atacar tarefa grande/multi-arquivo com o mínimo de tokens e o máximo de qualidade (`/desmond <tarefa>`, ou `/desmond` sozinho aplica à tarefa em curso)
+- Decidir **onde** cada trabalho roda: inline (Opus) → subagente único → fan-out de Agents → `Workflow` (escada de custo crescente; Workflow só com opt-in)
+- Trocar repetição manual por um **loop** agendado quando isso for mais barato que a execução na mão
+
+**Não** dispara sozinha (explícita), não compensa em tarefa trivial de um passo, e não sai escalando pra Workflow sem seu opt-in.
+
+Detalhes em `skills/desmond/SKILL.md`.
+
 ### Ferramenta: Plane (`skills/plane/`)
 
 Workflow de tasks no Plane. Cada dev usa a **própria** API key (`~/.claude/plane_config.json`).
