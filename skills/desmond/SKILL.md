@@ -73,3 +73,11 @@ Regra: repetição manual agendável/pollável ≥2–3 vezes → pare e ofereç
 
 ## Saída
 Plano curto → execução → **resumo de 2–4 linhas** do que mudou (arquivos tocados, decisões tomadas). Sem repetir diffs. Direto.
+
+## Entrega: worktree, feature toggle e PRs
+- **Sempre worktree + branch dedicada** para o trabalho — nunca edite/commite direto na branch principal.
+- **Toda feature nova nasce atrás de um feature toggle default-OFF**, garantindo retrocompatibilidade: com o toggle desligado, o caminho antigo permanece byte-a-byte idêntico. Para ações sensíveis (dinheiro, integração externa), prefira toggle **em camadas** — kill-switch global (env) + flag por tenant — concentrado num helper SSoT.
+- **Em CADA PR, documente os toggles**: no corpo do PR liste explicitamente quais flags precisam ser habilitadas para ativar a funcionalidade e **onde** habilitá-las (env var, config por tenant, tela de admin). Sem essa nota a feature entra mergeada e invisível.
+
+## Rastreabilidade no ClickUp
+Muito trabalho nasce e morre no GitHub (PR direto, hotfix, incidente) **sem task no ClickUp** — o time fica sem contexto e sem validação. Regra: ao concluir um trabalho que gerou PR/commit **sem uma task ClickUp correspondente**, **crie uma task no ClickUp** pra rastrear e validar (link do PR, resumo do que mudou, o que precisa ser validado). Pergunte a lista se não souber; `detail_level: 'summary'` sempre (ver diretrizes de MCP no CLAUDE.md global). Se a task já existe, comente/atualize em vez de duplicar.
