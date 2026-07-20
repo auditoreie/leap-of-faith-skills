@@ -81,5 +81,6 @@ Plano curto → execução → **resumo de 2–4 linhas** do que mudou (arquivos
 
 ## Rastreabilidade no ClickUp
 Muito trabalho nasce e morre no GitHub (PR direto, hotfix, incidente) **sem task no ClickUp** — o time fica sem contexto e sem validação. Regra: ao concluir um trabalho que gerou PR/commit **sem uma task ClickUp correspondente**, **crie uma task no ClickUp** pra rastrear e validar (link do PR, resumo do que mudou, o que precisa ser validado). Se a task já existe, comente/atualize em vez de duplicar. `detail_level: 'summary'` sempre (ver diretrizes de MCP no CLAUDE.md global).
+- **Sempre vincule o PR à task** (URL, para referência) e **registre o tempo gasto**: data/fuso da sessão + uma estimativa sensata do esforço.
 
 **Workspace — regra crítica:** crie tasks **SEMPRE no workspace da própria equipe (Auditore), NUNCA no workspace do cliente** nem em sprints do cliente. O trabalho é da equipe e é rastreado no workspace da equipe. Confirme a lista quando não for inequívoca.
