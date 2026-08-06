@@ -1,6 +1,6 @@
 ---
 name: plane-onboarding
-description: Onboards a dev to a Plane workspace — collects the dev's personal Plane API key, writes ~/.claude/plane_config.json, connects the Plane MCP, and verifies the /iniciar-task / /fechar-task flow. Use when a dev says "configurar Plane", "onboarding Plane", "setup da minha API key do Plane", "conectar o MCP do Plane", "configurar Claude Code para o Plane", or is setting up their machine for the first time. Each dev uses their OWN key — never a shared one.
+description: Onboards a dev to a Plane workspace — collects the dev's personal Plane API key, writes ~/.claude/plane_config.json, connects the Plane MCP, and verifies the /iniciar-task / /fechar-task flow. Use when a dev says "configurar Plane", "onboarding Plane", "setup da minha API key do Plane", "conectar o MCP do Plane", "configurar Claude Code para o Plane", or is setting up their machine for the first time. Each dev uses their OWN key — never a shared one. NÃO use para operar tasks no dia a dia (isso é /iniciar-task, /reportar-task ou /fechar-task) nem para configurar a chave de outra pessoa.
 ---
 
 # plane-onboarding

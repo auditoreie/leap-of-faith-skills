@@ -63,7 +63,12 @@ Bloqueia: segredo e credencial, `.env` e derivados, chave privada, PII, dado de 
 arquivo > 1 MB, frontmatter inválido, nome de skill duplicado. Sinaliza como ressalva: SKILL.md longa
 demais, falta de token budget ou safe-mode, padrão destrutivo, caminho absoluto de máquina.
 
-Exit code `1` quando há bloqueio — serve direto em hook de pre-commit ou em CI.
+Exit code `1` quando há bloqueio — serve direto em CI.
+
+**Neste repositório o gate já é automático:** o `install.sh` aponta `core.hooksPath` pra `.githooks/`,
+e o hook de `pre-commit` roda o scanner sobre os arquivos em stage a cada commit. Bloqueio aborta o
+commit; ressalva passa e aparece no review. Confira com `git config core.hooksPath` — deve responder
+`.githooks`.
 
 > Se o gate acusar credencial real: **revogue a chave primeiro**. Apagar do arquivo não resolve —
 > o histórico do git preserva o valor commitado.

@@ -32,9 +32,10 @@ git fetch upstream && git checkout -b feat/minha-skill upstream/main
 #    skills/<tema>/<nome>/SKILL.md
 
 # 4. Instale e use de verdade antes de mandar
+#    (o install.sh também ativa o hook de validação: core.hooksPath = .githooks)
 ./install.sh
 
-# 5. Rode o gate de validação — obrigatório
+# 5. Rode o gate de validação quando quiser conferir antes do commit
 ./skills/engenharia/validar-skill/scripts/scan.sh
 
 # 6. Commit (conventional commits, uma linha) e PR pro upstream
@@ -42,8 +43,26 @@ git commit -m "feat(skill/minha-skill): resumo em uma linha"
 git push origin feat/minha-skill
 ```
 
-O PR precisa passar pela `validar-skill` com veredicto **APROVADO** ou **APROVADO COM RESSALVAS**.
-Bloqueio não entra — e se o bloqueio for credencial, **revogue a chave** antes de qualquer coisa.
+## O gate é obrigatório e automático
+
+Todo commit passa pela `validar-skill` antes de entrar — o `install.sh` configura um hook de
+`pre-commit` que roda o scanner sobre os arquivos em stage. **Bloqueio aborta o commit.** Ressalva
+passa e aparece no review.
+
+```bash
+./install.sh                              # ativa o hook (uma vez por clone)
+git config core.hooksPath                 # deve responder: .githooks
+```
+
+Se você clonou e o hook não está ativo, rode o `install.sh` — hooks não viajam no `git clone`, por
+isso eles ficam versionados em `.githooks/` e o instalador aponta o git pra lá.
+
+O PR precisa passar com veredicto **APROVADO** ou **APROVADO COM RESSALVAS**. Bloqueio não entra —
+e se o bloqueio for credencial, **revogue a chave** antes de qualquer outra coisa: o histórico do git
+preserva o valor, então apagar do arquivo não resolve.
+
+`--no-verify` existe, mas usar significa que você contornou o gate conscientemente — explique no PR
+por quê. Contribuição com bypass não documentado é rejeitada.
 
 ## O que faz uma contribuição ser aceita
 

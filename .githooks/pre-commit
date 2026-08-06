@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# pre-commit — roda o gate de validação antes de deixar qualquer commit entrar.
+#
+# Instalado por ./install.sh (git config core.hooksPath .githooks).
+# Valida o que está EM STAGE — não o diff contra a main — porque é isso que vira commit.
+#
+# Bloqueio => commit abortado. Ressalva => passa, aparece no review.
+# Emergência real: git commit --no-verify (e explique no PR por quê).
+
+set -uo pipefail
+
+REPO_DIR="$(git rev-parse --show-toplevel)"
+SCAN="$REPO_DIR/skills/engenharia/validar-skill/scripts/scan.sh"
+
+if [[ ! -x "$SCAN" ]]; then
+  echo "pre-commit: scanner não encontrado em $SCAN — pulando." >&2
+  exit 0
+fi
+
+staged="$(git diff --cached --name-only --diff-filter=ACMR)"
+if [[ -z "$staged" ]]; then
+  exit 0
+fi
+
+# Só arquivos que ainda existem na árvore (o scanner lê do disco).
+targets=""
+while IFS= read -r f; do
+  [[ -n "$f" && -f "$REPO_DIR/$f" ]] && targets="$targets$REPO_DIR/$f"$'\n'
+done <<< "$staged"
+
+[[ -z "$targets" ]] && exit 0
+
+echo "pre-commit: validando arquivos em stage…"
+# shellcheck disable=SC2086
+"$SCAN" $(printf '%s' "$targets" | tr '\n' ' ')
+status=$?
+
+if [[ $status -ne 0 ]]; then
+  echo "" >&2
+  echo "COMMIT ABORTADO — o gate de validação encontrou bloqueios acima." >&2
+  echo "Se for credencial: revogue a chave antes de qualquer outra coisa." >&2
+  exit 1
+fi
+
+exit 0

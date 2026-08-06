@@ -29,7 +29,8 @@ leap-of-faith-skills/
 ├── docs/creating-skills.md       ← como criar e documentar uma skill
 ├── CONTRIBUTING.md               ← fluxo de fork, PR e backlog de ideias
 ├── HOWTO.md                      ← uso de cada skill no dia a dia
-├── install.sh                    ← symlinka as skills pra ~/.claude/skills/
+├── .githooks/pre-commit          ← gate de validação, roda a cada commit
+├── install.sh                    ← symlinks + ativação do hook
 └── LICENSE                       ← PolyForm Noncommercial 1.0.0
 ```
 
@@ -74,7 +75,9 @@ git clone git@github.com:auditoreie/leap-of-faith-skills.git ~/leap-of-faith-ski
 ```
 
 O `install.sh` recursa em `skills/**/SKILL.md`, cria um symlink por skill em `~/.claude/skills/` e não
-sobrescreve nada divergente sem perguntar. Atualizar depois é `git pull`.
+sobrescreve nada divergente sem perguntar. Também ativa o **gate de validação**: `core.hooksPath`
+aponta pra `.githooks/`, e todo commit passa pelo scanner de segredos antes de entrar. Atualizar
+depois é `git pull`.
 
 Abra o Claude Code em qualquer projeto e as skills estarão disponíveis — por comando
 (`/project-ledger init`) ou por intent, quando o que você pedir casar com a `description` da skill.
