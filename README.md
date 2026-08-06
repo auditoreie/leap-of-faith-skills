@@ -7,6 +7,7 @@ Repositório versionado de skills do Claude Code compartilhadas entre os times �
 ```
 team-skills/
 ├── skills/                       ← cada pasta com um SKILL.md é uma skill (em qualquer profundidade)
+│   ├── desmond/                  ← genérica: modo tri-modelo Opus/Fable/Mythos (tokens + orquestração)
 │   ├── project-ledger/           ← genérica: ADRs versionados + tasks locais
 │   ├── plane/                    ← ferramenta: Plane (workflow de tasks)
 │   │   ├── iniciar-task/         ← abre task + cronômetro + executa
