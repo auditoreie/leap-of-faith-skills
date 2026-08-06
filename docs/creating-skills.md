@@ -41,8 +41,8 @@ description: Frase explicando QUANDO usar. Inclua gatilhos de intent (palavras-c
 
 ## Processo
 
-1. Crie `skills/<nome>/SKILL.md` aqui no `auditore-skills`.
-2. Teste localmente: rode `~/auditore-skills/install.sh` e use em um projeto.
+1. Crie `skills/<nome>/SKILL.md` (ou `skills/<ferramenta>/<nome>/SKILL.md` se for específica de uma ferramenta) aqui no `team-skills`.
+2. Teste localmente: rode `~/team-skills/install.sh` e use em um projeto.
 3. Itere baseado no uso real.
 4. Quando estabilizar, commit e PR aqui.
 

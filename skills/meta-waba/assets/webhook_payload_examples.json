@@ -1,0 +1,336 @@
+{
+  "_meta": {
+    "description": "Exemplos canônicos de payloads de webhook do WhatsApp Business Platform. Cada chave de nível superior é o `field` da Meta. Use estes payloads para escrever testes de integração e protótipos de handlers.",
+    "graph_api_version": "v23.0",
+    "envelope_format": "Todo POST chega no formato { object: 'whatsapp_business_account', entry: [{ id: WABA_ID, time, changes: [{ value: ..., field: '...' }] }] }. Os exemplos abaixo mostram o conteúdo de `value` para cada `field`."
+  },
+  "messages_text_received": {
+    "field": "messages",
+    "value": {
+      "messaging_product": "whatsapp",
+      "metadata": {
+        "display_phone_number": "551130000000",
+        "phone_number_id": "123456789012345"
+      },
+      "contacts": [
+        {
+          "profile": { "name": "Felipe Silva" },
+          "wa_id": "5511999998888"
+        }
+      ],
+      "messages": [
+        {
+          "from": "5511999998888",
+          "id": "wamid.HBgNNTUxMTk5OTk5ODg4OBUCABIYIDk0RkY...",
+          "timestamp": "1714947600",
+          "type": "text",
+          "text": { "body": "Olá, gostaria de agendar uma consulta" }
+        }
+      ]
+    }
+  },
+  "messages_image_received": {
+    "field": "messages",
+    "value": {
+      "messaging_product": "whatsapp",
+      "metadata": {
+        "display_phone_number": "551130000000",
+        "phone_number_id": "123456789012345"
+      },
+      "contacts": [{ "profile": { "name": "Felipe" }, "wa_id": "5511999998888" }],
+      "messages": [
+        {
+          "from": "5511999998888",
+          "id": "wamid.HBg...",
+          "timestamp": "1714947700",
+          "type": "image",
+          "image": {
+            "caption": "Foto do exame",
+            "mime_type": "image/jpeg",
+            "sha256": "8ba8...",
+            "id": "1029384756102938"
+          }
+        }
+      ]
+    }
+  },
+  "messages_button_reply_received": {
+    "field": "messages",
+    "value": {
+      "messaging_product": "whatsapp",
+      "metadata": {
+        "display_phone_number": "551130000000",
+        "phone_number_id": "123456789012345"
+      },
+      "contacts": [{ "profile": { "name": "Felipe" }, "wa_id": "5511999998888" }],
+      "messages": [
+        {
+          "from": "5511999998888",
+          "id": "wamid.HBg...",
+          "timestamp": "1714947800",
+          "type": "interactive",
+          "interactive": {
+            "type": "button_reply",
+            "button_reply": {
+              "id": "btn_confirmar",
+              "title": "Confirmar"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "messages_referral_from_ad": {
+    "field": "messages",
+    "value": {
+      "messaging_product": "whatsapp",
+      "metadata": {
+        "display_phone_number": "551130000000",
+        "phone_number_id": "123456789012345"
+      },
+      "contacts": [{ "profile": { "name": "Felipe" }, "wa_id": "5511999998888" }],
+      "messages": [
+        {
+          "referral": {
+            "source_url": "https://fb.me/...",
+            "source_id": "1234567890",
+            "source_type": "ad",
+            "headline": "Promoção de Maio",
+            "body": "10% off em todos os planos",
+            "media_type": "image",
+            "image_url": "https://...",
+            "ctwa_clid": "AQ..."
+          },
+          "from": "5511999998888",
+          "id": "wamid.HBg...",
+          "timestamp": "1714947900",
+          "type": "text",
+          "text": { "body": "Vi no anúncio, quero saber mais" }
+        }
+      ]
+    }
+  },
+  "messages_status_delivered": {
+    "field": "messages",
+    "value": {
+      "messaging_product": "whatsapp",
+      "metadata": {
+        "display_phone_number": "551130000000",
+        "phone_number_id": "123456789012345"
+      },
+      "statuses": [
+        {
+          "id": "wamid.HBg...",
+          "status": "delivered",
+          "timestamp": "1714947610",
+          "recipient_id": "5511999998888",
+          "conversation": {
+            "id": "abc123",
+            "expiration_timestamp": "1715034000",
+            "origin": { "type": "marketing" }
+          },
+          "pricing": {
+            "billable": true,
+            "pricing_model": "CBP",
+            "category": "marketing"
+          }
+        }
+      ]
+    }
+  },
+  "messages_status_failed": {
+    "field": "messages",
+    "value": {
+      "messaging_product": "whatsapp",
+      "metadata": {
+        "display_phone_number": "551130000000",
+        "phone_number_id": "123456789012345"
+      },
+      "statuses": [
+        {
+          "id": "wamid.HBg...",
+          "status": "failed",
+          "timestamp": "1714947620",
+          "recipient_id": "5511999998888",
+          "errors": [
+            {
+              "code": 131026,
+              "title": "Message undeliverable",
+              "message": "Receiver is incapable of receiving this message",
+              "error_data": { "details": "Recipient phone number not in allowed list" }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "message_template_status_update_approved": {
+    "field": "message_template_status_update",
+    "value": {
+      "event": "APPROVED",
+      "message_template_id": 1234567890123456,
+      "message_template_name": "agendamento_confirmacao",
+      "message_template_language": "pt_BR",
+      "reason": null,
+      "disable_info": null,
+      "other_info": null
+    }
+  },
+  "message_template_status_update_rejected": {
+    "field": "message_template_status_update",
+    "value": {
+      "event": "REJECTED",
+      "message_template_id": 1234567890123456,
+      "message_template_name": "promo_genérica",
+      "message_template_language": "pt_BR",
+      "reason": "INVALID_FORMAT",
+      "disable_info": null,
+      "other_info": "Template body has placeholder mismatch"
+    }
+  },
+  "message_template_status_update_paused": {
+    "field": "message_template_status_update",
+    "value": {
+      "event": "PAUSED",
+      "message_template_id": 1234567890123456,
+      "message_template_name": "campanha_maio",
+      "message_template_language": "pt_BR",
+      "reason": "QUALITY_RATING_DROP",
+      "disable_info": {
+        "disable_date": "2026-05-04T18:00:00Z",
+        "disable_reason": "Pause for 6 hours due to repeated low-quality feedback"
+      },
+      "other_info": null
+    }
+  },
+  "message_template_quality_update": {
+    "field": "message_template_quality_update",
+    "value": {
+      "previous_quality_score": "GREEN",
+      "new_quality_score": "YELLOW",
+      "message_template_id": 1234567890123456,
+      "message_template_name": "campanha_maio",
+      "message_template_language": "pt_BR"
+    }
+  },
+  "template_category_update": {
+    "field": "template_category_update",
+    "value": {
+      "message_template_id": 1234567890123456,
+      "message_template_name": "lembrete_consulta",
+      "message_template_language": "pt_BR",
+      "previous_category": "UTILITY",
+      "new_category": "MARKETING",
+      "correct_category": "MARKETING"
+    }
+  },
+  "phone_number_quality_update_flagged": {
+    "field": "phone_number_quality_update",
+    "value": {
+      "display_phone_number": "551130000000",
+      "event": "FLAGGED",
+      "current_limit": "TIER_1K"
+    }
+  },
+  "phone_number_quality_update_upgraded": {
+    "field": "phone_number_quality_update",
+    "value": {
+      "display_phone_number": "551130000000",
+      "event": "UPGRADE",
+      "current_limit": "TIER_10K"
+    }
+  },
+  "phone_number_name_update_approved": {
+    "field": "phone_number_name_update",
+    "value": {
+      "display_phone_number": "551130000000",
+      "decision": "APPROVED",
+      "requested_verified_name": "FGB Consultoria",
+      "rejection_reason": null
+    }
+  },
+  "phone_number_name_update_rejected": {
+    "field": "phone_number_name_update",
+    "value": {
+      "display_phone_number": "551130000000",
+      "decision": "REJECTED",
+      "requested_verified_name": "Atendimento",
+      "rejection_reason": "NAME_NOT_REPRESENTATIVE"
+    }
+  },
+  "account_update_verified": {
+    "field": "account_update",
+    "value": {
+      "phone_number": "551130000000",
+      "event": "VERIFIED_ACCOUNT",
+      "ban_info": null,
+      "violation_info": null,
+      "restriction_info": null
+    }
+  },
+  "account_update_partner_added": {
+    "field": "account_update",
+    "value": {
+      "phone_number": null,
+      "event": "PARTNER_ADDED",
+      "waba_info": {
+        "waba_id": "987654321098765",
+        "owner_business_id": "123456789012345"
+      }
+    }
+  },
+  "account_update_partner_removed": {
+    "field": "account_update",
+    "value": {
+      "phone_number": null,
+      "event": "PARTNER_REMOVED",
+      "waba_info": {
+        "waba_id": "987654321098765",
+        "owner_business_id": "123456789012345"
+      }
+    }
+  },
+  "account_review_update": {
+    "field": "account_review_update",
+    "value": {
+      "decision": "APPROVED"
+    }
+  },
+  "business_capability_update": {
+    "field": "business_capability_update",
+    "value": {
+      "max_phone_numbers_per_business": 20,
+      "max_phone_numbers_per_waba": 25
+    }
+  },
+  "flows_published": {
+    "field": "flows",
+    "value": {
+      "event": "PUBLISHED",
+      "flow_id": "987654321098765",
+      "name": "Agendamento clínica",
+      "old_status": "DRAFT",
+      "new_status": "PUBLISHED"
+    }
+  },
+  "smb_message_echoes_coexistence": {
+    "field": "smb_message_echoes",
+    "value": {
+      "messaging_product": "whatsapp",
+      "metadata": {
+        "display_phone_number": "551130000000",
+        "phone_number_id": "123456789012345"
+      },
+      "message_echoes": [
+        {
+          "from": "551130000000",
+          "to": "5511999998888",
+          "id": "wamid.HBg...",
+          "timestamp": "1714948000",
+          "type": "text",
+          "text": { "body": "Resposta enviada do app móvel pelo cliente" }
+        }
+      ]
+    }
+  }
+}

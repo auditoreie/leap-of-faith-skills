@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 # install.sh — symlinka cada skill deste repo para ~/.claude/skills/
+# Suporta estrutura aninhada por ferramenta (skills/<tool>/<skill>/SKILL.md) e
+# skills na raiz (skills/<skill>/SKILL.md). O nome do symlink é o basename da
+# pasta da skill (precisa ser único entre todas as skills do repo).
 # Idempotente: re-execução não quebra nada. Confirma antes de sobrescrever conflitos.
 
 set -euo pipefail
@@ -18,24 +21,32 @@ mkdir -p "$SKILLS_DEST"
 created=0
 skipped=0
 relinked=0
+seen=" "  # lista de nomes já vistos (compatível com bash 3.2, sem arrays assoc.)
 
-for skill_dir in "$SKILLS_SRC"/*/; do
-  [[ -d "$skill_dir" ]] || continue
+# Cada diretório que contém um SKILL.md é uma skill (em qualquer profundidade).
+while IFS= read -r skillmd; do
+  skill_dir="$(cd "$(dirname "$skillmd")" && pwd)"
   name="$(basename "$skill_dir")"
   target="$SKILLS_DEST/$name"
-  source="$skill_dir"
+
+  if [[ "$seen" == *" $name "* ]]; then
+    echo "Conflito de nome: '$name' aparece em mais de uma skill. Pulando a duplicata: $skill_dir" >&2
+    skipped=$((skipped + 1))
+    continue
+  fi
+  seen="$seen$name "
 
   if [[ -L "$target" ]]; then
     current="$(readlink "$target")"
-    if [[ "$current" == "${source%/}" ]]; then
+    if [[ "$current" == "$skill_dir" ]]; then
       skipped=$((skipped + 1))
       continue
     fi
     echo "Symlink existente para $name aponta para: $current"
-    read -r -p "  Substituir por $source? [y/N] " ans
+    read -r -p "  Substituir por $skill_dir? [y/N] " ans
     if [[ "$ans" =~ ^[Yy]$ ]]; then
       rm "$target"
-      ln -s "${source%/}" "$target"
+      ln -s "$skill_dir" "$target"
       relinked=$((relinked + 1))
     else
       skipped=$((skipped + 1))
@@ -44,10 +55,10 @@ for skill_dir in "$SKILLS_SRC"/*/; do
     echo "Arquivo/diretório real existe em $target — pulando (não sobrescrevemos cópia local)."
     skipped=$((skipped + 1))
   else
-    ln -s "${source%/}" "$target"
+    ln -s "$skill_dir" "$target"
     created=$((created + 1))
   fi
-done
+done < <(find "$SKILLS_SRC" -name SKILL.md -type f | sort)
 
 echo ""
 echo "Resumo: $created criado(s), $relinked re-linkado(s), $skipped pulado(s)."
