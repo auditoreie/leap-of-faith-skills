@@ -1,0 +1,41 @@
+# Segredos e credenciais — nunca versionar.
+# A validar-skill bloqueia estes padrões no PR; aqui eles nem chegam ao índice.
+.env
+.env.*
+!.env.example
+.envrc
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa*
+id_dsa*
+id_ecdsa*
+id_ed25519*
+credentials.json
+service-account*.json
+plane_config.json
+.netrc
+.npmrc
+.pypirc
+
+# Estado local e dumps
+*.sqlite
+*.sqlite3
+*.dump
+*.bak
+*.log
+
+# Rascunhos e material de trabalho não publicável
+incoming/
+scratch/
+tmp/
+
+# Sistema operacional / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
