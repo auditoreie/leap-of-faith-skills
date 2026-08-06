@@ -1,52 +1,121 @@
-# team-skills
+# leap-of-faith-skills
 
-Repositório versionado de skills do Claude Code compartilhadas entre os times — **Auditore** e **Sintetiza**. Skills reusáveis e organizadas **por ferramenta**, pra ficar claro o que é genérico e o que é específico de uma ferramenta (Plane, Meta WhatsApp, etc.).
+Skills do [Claude Code](https://claude.com/claude-code) mantidas pela **Auditore** — reusáveis entre
+projetos, organizadas por tema e escritas com disciplina de token.
+
+Uma skill é conhecimento que para de ser re-explicado: em vez de descrever o mesmo processo a cada
+sessão, ele vira um arquivo que o agente carrega quando precisa e ignora quando não precisa.
+
+**Contribuições são bem-vindas.** Fork, escreva, valide, mande o PR — veja
+[CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## O que tem aqui
 
 ```
-team-skills/
-├── skills/                       ← cada pasta com um SKILL.md é uma skill (em qualquer profundidade)
-│   ├── project-ledger/           ← genérica: ADRs versionados + tasks locais
-│   ├── plane/                    ← ferramenta: Plane (workflow de tasks)
-│   │   ├── iniciar-task/         ← abre task + cronômetro + executa
-│   │   ├── reportar-task/        ← reporta/loga tempo e custo sem fechar
-│   │   ├── fechar-task/          ← encerra: tempo, tokens, custo, comentário
-│   │   └── plane-onboarding/     ← setup da API key/MCP do Plane por dev
-│   └── meta-waba/                ← ferramenta: Meta WhatsApp Business API (referência)
-├── docs/
-│   └── creating-skills.md        ← guia pra adicionar novas skills
-├── install.sh                    ← symlinka skills daqui para ~/.claude/skills/ (recursa em skills/**)
-├── SYNC.md                       ← como manter os dois repos (Auditore + Sintetiza) em sincronia
-├── HOWTO.md                      ← como usar
-└── README.md
+leap-of-faith-skills/
+├── skills/
+│   ├── engenharia/               ← como o agente trabalha
+│   │   ├── desmond/                  orquestração token-efficient (acionamento explícito)
+│   │   └── validar-skill/            gate de contribuição: segredos, estrutura, escopo
+│   ├── gestao/                   ← fluxo de trabalho e rastreabilidade
+│   │   ├── project-ledger/           ADRs versionados + tasks locais
+│   │   └── plane/                    ciclo de task no Plane
+│   │       ├── plane-onboarding/         setup da API key/MCP por dev
+│   │       ├── iniciar-task/             abre a task + cronômetro + executa
+│   │       ├── reportar-task/            reporta/loga tempo e custo sem fechar
+│   │       └── fechar-task/              encerra: tempo, tokens, custo, resumo
+│   └── integracoes/              ← plataformas externas
+│       └── meta-waba/                WhatsApp Business Platform (Cloud API/Graph API)
+├── docs/creating-skills.md       ← como criar e documentar uma skill
+├── CONTRIBUTING.md               ← fluxo de fork, PR e backlog de ideias
+├── HOWTO.md                      ← uso de cada skill no dia a dia
+├── install.sh                    ← symlinka as skills pra ~/.claude/skills/
+└── LICENSE                       ← PolyForm Noncommercial 1.0.0
 ```
 
-O nome do symlink instalado é o **basename da pasta da skill** (ex: `reportar-task`), independente da ferramenta sob a qual ela está agrupada. Nomes devem ser únicos entre todas as skills.
+O nome instalado é o **basename da pasta da skill** — `skills/gestao/plane/fechar-task/` vira
+`fechar-task`. O agrupamento por tema é organização do repositório, não faz parte do nome. Nomes
+precisam ser únicos.
 
-## Como começar
+## Skills
+
+### engenharia
+
+| Skill | O que faz |
+|---|---|
+| **`desmond`** | Modo de orquestração de acionamento explícito (`/desmond`): planeja antes de agir, despacha cada trabalho pro agente mais barato que dá conta e reserva o modelo de fronteira pra síntese e decisão. Para tarefa grande e multi-arquivo com o mínimo de tokens. |
+| **`validar-skill`** | Gate de contribuição. Audita uma skill ou o PR inteiro antes de publicar: bloqueia segredo, `.env`, chave privada, PII e dado de cliente; valida frontmatter, nome único e estrutura; reprova escopo inválido e conteúdo prejudicial. Inclui `scripts/scan.sh`. |
+
+### gestao
+
+| Skill | O que faz |
+|---|---|
+| **`project-ledger`** | Decisões de engenharia (ADRs versionados em `docs/adr/`) e trabalho ativo (tasks locais, fora do git). `init` faz o bootstrap do repositório; fechar uma task gera o ADR. Sync com Notion/ClickUp só sob comando explícito. |
+| **`plane-onboarding`** | Primeiro setup do dev: coleta a API key **pessoal**, grava `~/.claude/plane_config.json` (chmod 600) e conecta o MCP do Plane. Cada dev usa a própria chave. |
+| **`iniciar-task`** | Move a task pra In Progress, inicia o cronômetro, lê objetivo e definition of done, e começa a executar. |
+| **`reportar-task`** | Comenta na task com progresso e PR; opcionalmente loga tempo e custo de IA (via `ccusage`). **Não fecha.** |
+| **`fechar-task`** | Encerra o ciclo: worklog, tokens, custo e comentário de resumo. |
+
+Fronteira do fluxo Plane: `iniciar` (começa) → `reportar` (meio, sem fechar) → `fechar` (encerra).
+Nenhuma delas tem workspace ou Project ID fixo — tudo é resolvido em runtime a partir de
+`~/.claude/plane_config.json` e do prefixo do task ID.
+
+### integracoes
+
+| Skill | O que faz |
+|---|---|
+| **`meta-waba`** | Referência curada da WhatsApp Business Platform: templates (incluindo header de vídeo por Resumable Upload), ciclo de vida de números, webhooks com HMAC SHA-256, Flows com endpoint criptografado, analytics, Embedded Signup/Tech Provider e códigos de erro reais. Detalhe em `references/`, com scripts em TypeScript. |
+
+## Começando
 
 ```bash
-# Clone (ou pull se já existe)
-git clone <repo> ~/team-skills
-
-# Instala (cria symlinks em ~/.claude/skills/)
-~/team-skills/install.sh
+git clone git@github.com:auditoreie/leap-of-faith-skills.git ~/leap-of-faith-skills
+~/leap-of-faith-skills/install.sh
 ```
 
-Depois, abra o Claude Code em qualquer projeto e as skills estarão disponíveis (ex: `/project-ledger init`, `/reportar-task SINTE-25`).
+O `install.sh` recursa em `skills/**/SKILL.md`, cria um symlink por skill em `~/.claude/skills/` e não
+sobrescreve nada divergente sem perguntar. Atualizar depois é `git pull`.
 
-Para detalhes de uso por skill, veja [HOWTO.md](HOWTO.md).
-Para adicionar uma skill nova, veja [docs/creating-skills.md](docs/creating-skills.md).
+Abra o Claude Code em qualquer projeto e as skills estarão disponíveis — por comando
+(`/project-ledger init`) ou por intent, quando o que você pedir casar com a `description` da skill.
 
-## Dois repos, um conteúdo
+Uso detalhado: [HOWTO.md](HOWTO.md) · Criar uma skill: [docs/creating-skills.md](docs/creating-skills.md)
 
-Como Auditore e Sintetiza são orgs separadas (sem seats compartilhados), o conteúdo vive espelhado em **dois repositórios** que recebem PRs cada um do seu time. A reconciliação entre eles segue o ritual em [SYNC.md](SYNC.md). **Auditore é o primário** (referência); Sintetiza é o espelho.
+## Contribuindo
+
+O valor deste repositório é proporcional ao número de pessoas que o usam de verdade e devolvem o que
+aprenderam. Se você teve que explicar o mesmo padrão ao Claude duas vezes em projetos diferentes,
+isso é uma skill — e ela cabe aqui.
+
+1. **Fork** e branch a partir da `main`
+2. Escreva seguindo [docs/creating-skills.md](docs/creating-skills.md)
+3. **Use de verdade** algumas vezes antes de mandar
+4. Rode o gate: `./skills/engenharia/validar-skill/scripts/scan.sh`
+5. Abra o PR
+
+Correções contam tanto quanto skills novas: passo que quebrou porque a API mudou, `description` que
+dispara na hora errada, exemplo que não funciona mais. [CONTRIBUTING.md](CONTRIBUTING.md) tem o fluxo
+completo e um **backlog aberto de ideias** — revisão de PR, investigação de bug, auditoria de
+dependências, acessibilidade, i18n, novas integrações. Pegue uma.
+
+Na dúvida se a sua ideia cabe: abra uma issue antes de escrever.
 
 ## Filosofia
 
-- **Skills reusáveis entre projetos** — nada amarrado a um único repo.
-- **Organização por ferramenta** — skills específicas de uma ferramenta vivem sob `skills/<ferramenta>/`; genéricas ficam na raiz de `skills/`.
-- **Token-efficient by default** — cada skill respeita um budget de leitura/escrita; ver instruções na SKILL.md de cada uma.
-- **Local-first, sync opcional** — o estado vive no disco do dev. Sync com Notion/ClickUp só sob comando explícito.
-- **Versionável e auditável** — toda mudança em skill compartilhada passa por commit aqui.
+- **Reusável entre projetos** — nada amarrado a um único repositório.
+- **Token-efficient por padrão** — cada skill declara o que ler e o que não ler; detalhe é lazy-load.
+- **Safe-mode por padrão** — skill não faz git, não deleta e não chama API externa sem comando.
+- **Local-first** — o estado vive no disco do dev; sync externo é sempre explícito.
+- **Sem segredo, nunca** — credencial se lê de config local. O gate de validação existe pra garantir.
+- **Manutenção > acumulação** — uma skill excelente vale mais que dez abandonadas.
+
+## Licença
+
+[PolyForm Noncommercial License 1.0.0](LICENSE) — Copyright (c) 2026 Auditore.
+
+Você pode usar, modificar e redistribuir livremente para **qualquer fim não-comercial**: estudo,
+pesquisa, projeto pessoal, uso em organização sem fins lucrativos, instituição de ensino ou órgão
+público. Uso comercial por terceiros exige licença específica — fale com a Auditore.
+
+Redistribuindo, mantenha o aviso de copyright e a licença junto. Não é uma licença aprovada pela OSI,
+justamente porque restringe uso comercial; é uma licença *source-available*.
