@@ -1,13 +1,13 @@
 ---
 name: reportar-task
-description: Posta um report (comentário) numa work item do Plane, opcionalmente com link de PR, worklog de tempo, custo de tokens (via ccusage) e/ou mudança de estado — mas NÃO encerra a task e não depende do cronômetro de /iniciar-task. Resolve o projeto pelo prefixo do ID, então funciona em qualquer projeto do workspace (ATLASEDUCA-1, VEGA-12, SINTE-25, etc.). Use quando o usuário disser "reportar na task", "comentar na task X", "registrar o PR na task", "logar tempo na task sem fechar", "atualizar a task no Plane sem fechar", "report on task", "add a comment to the Plane issue". NÃO use para iniciar trabalho (isso é /iniciar-task) nem para o encerramento formal da task com mudança pra concluída (isso é /fechar-task).
+description: Posta um report (comentário) numa work item do Plane, opcionalmente com link de PR, worklog de tempo, custo de tokens (via ccusage) e/ou mudança de estado — mas NÃO encerra a task e não depende do cronômetro de /iniciar-task. Resolve o projeto pelo prefixo do ID, então funciona em qualquer projeto do workspace (PROJ-1, ACME-12, etc.). Use quando o usuário disser "reportar na task", "comentar na task X", "registrar o PR na task", "logar tempo na task sem fechar", "atualizar a task no Plane sem fechar", "report on task", "add a comment to the Plane issue". NÃO use para iniciar trabalho (isso é /iniciar-task) nem para o encerramento formal da task com mudança pra concluída (isso é /fechar-task).
 ---
 
 # reportar-task
 
 Posta um **comentário de report** numa work item do Plane via REST API. É a operação leve do meio do fluxo: registrar progresso, anexar um PR, opcionalmente **logar tempo (worklog) e custo de tokens** — tudo **sem encerrar** a task e sem depender do cronômetro de `/iniciar-task`.
 
-**Task ID:** `$ARGUMENTS` (ex: `ATLASEDUCA-1`). Pode vir seguido de flags/intenção (ver Opções).
+**Task ID:** `$ARGUMENTS` (ex: `PROJ-1`). Pode vir seguido de flags/intenção (ver Opções).
 
 ## Token discipline
 
@@ -24,15 +24,18 @@ Posta um **comentário de report** numa work item do Plane via REST API. É a op
 
 ## Passos
 
-1. **API Key** (nunca hardcode):
+1. **Config** — key e workspace vêm de `~/.claude/plane_config.json` (nunca hardcode):
    ```bash
-   API_KEY=$(python3 -c "import json,os;print(json.load(open(os.path.expanduser('~/.claude/plane_config.json')))['api_key'])")
+   CFG=~/.claude/plane_config.json
+   API_KEY=$(python3 -c "import json,os;print(json.load(open(os.path.expanduser('$CFG')))['api_key'])")
+   WORKSPACE=$(python3 -c "import json,os;print(json.load(open(os.path.expanduser('$CFG')))['workspace'])")
    ```
+   Se o arquivo não existir, pare e aponte a skill `plane-onboarding`.
 
-2. **Resolver o projeto pelo prefixo do ID.** Separe `$ARGUMENTS` em `PREFIX-SEQ` (ex: `ATLASEDUCA-1` → prefixo `ATLASEDUCA`, seq `1`). Busque o Project ID cujo `identifier == PREFIX`:
+2. **Resolver o projeto pelo prefixo do ID.** Separe `$ARGUMENTS` em `PREFIX-SEQ` (ex: `PROJ-1` → prefixo `PROJ`, seq `1`). Busque o Project ID cujo `identifier == PREFIX`:
    ```bash
    PROJECT_ID=$(curl -s -H "X-API-Key: $API_KEY" \
-     "https://api.plane.so/api/v1/workspaces/sintetizaai/projects/" \
+     "https://api.plane.so/api/v1/workspaces/$WORKSPACE/projects/" \
      | python3 -c "import sys,json;d=json.load(sys.stdin);r=d.get('results',d) if isinstance(d,dict) else d;print(next((p['id'] for p in r if p.get('identifier')=='$PREFIX'),''))")
    ```
    Se vier vazio, pare e mostre os identifiers disponíveis — não chute.
@@ -40,7 +43,7 @@ Posta um **comentário de report** numa work item do Plane via REST API. É a op
 3. **Achar a issue pelo `sequence_id`:**
    ```bash
    ISSUE_ID=$(curl -s -H "X-API-Key: $API_KEY" \
-     "https://api.plane.so/api/v1/workspaces/sintetizaai/projects/$PROJECT_ID/issues/?per_page=100" \
+     "https://api.plane.so/api/v1/workspaces/$WORKSPACE/projects/$PROJECT_ID/issues/?per_page=100" \
      | python3 -c "import sys,json;d=json.load(sys.stdin);r=d.get('results',d) if isinstance(d,dict) else d;print(next((i['id'] for i in r if i.get('sequence_id')==$SEQ),''))")
    ```
    Vazio → a issue não está na primeira página (pagine com `?cursor=`) ou o ID está errado. Avise.
@@ -51,28 +54,28 @@ Posta um **comentário de report** numa work item do Plane via REST API. É a op
    ```bash
    curl -s -X POST -H "X-API-Key: $API_KEY" -H "Content-Type: application/json" \
      -d "{\"comment_html\": \"<HTML>\"}" \
-     "https://api.plane.so/api/v1/workspaces/sintetizaai/projects/$PROJECT_ID/issues/$ISSUE_ID/comments/"
+     "https://api.plane.so/api/v1/workspaces/$WORKSPACE/projects/$PROJECT_ID/issues/$ISSUE_ID/comments/"
    ```
 
 6. **(Opcional, opt-in) Worklog de tempo.** Só com `--time <min>`. Cria um worklog no **timesheet nativo** da issue — **não** fecha a task, e os worklogs **somam** (pode haver vários por issue). `duration` é um **inteiro em minutos** (não use `"87m"` — a API rejeita com `A valid integer is required`):
    ```bash
    curl -s -X POST -H "X-API-Key: $API_KEY" -H "Content-Type: application/json" \
      -d "{\"description\": \"Sessão Claude Code\", \"logged_by\": \"claude-code\", \"duration\": <MIN>}" \
-     "https://api.plane.so/api/v1/workspaces/sintetizaai/projects/$PROJECT_ID/issues/$ISSUE_ID/worklogs/"
+     "https://api.plane.so/api/v1/workspaces/$WORKSPACE/projects/$PROJECT_ID/issues/$ISSUE_ID/worklogs/"
    ```
 
 7. **(Opcional) Gravar nos campos personalizados Custo IA / Tokens IA.** Com `--cost`/`--tokens`, além de citar no comentário, grave nos custom fields nativos (DECIMAL) que existem em **todos os projetos** no tipo Task default: `Custo IA (US$)` e `Tokens IA`.
    - Pegue os IDs das propriedades no tipo da issue:
      ```bash
      curl -s -H "X-API-Key: $API_KEY" \
-       "https://api.plane.so/api/v1/workspaces/sintetizaai/projects/$PROJECT_ID/issue-types/$TYPE_ID/issue-properties/"
+       "https://api.plane.so/api/v1/workspaces/$WORKSPACE/projects/$PROJECT_ID/issue-types/$TYPE_ID/issue-properties/"
      ```
      (`$TYPE_ID` = o `issue_type` da issue, ou o tipo com `is_default:true`.) Mapeie `display_name → id`. Se os campos não existirem nesse projeto, pule e avise.
    - Grave o valor (POST cria, **valor numérico**, não string; se já existe, use PATCH no mesmo path):
      ```bash
      curl -s -X POST -H "X-API-Key: $API_KEY" -H "Content-Type: application/json" \
        -d "{\"value\": <NUMERO>}" \
-       "https://api.plane.so/api/v1/workspaces/sintetizaai/projects/$PROJECT_ID/work-items/$ISSUE_ID/work-item-properties/$PROP_ID/values/"
+       "https://api.plane.so/api/v1/workspaces/$WORKSPACE/projects/$PROJECT_ID/work-items/$ISSUE_ID/work-item-properties/$PROP_ID/values/"
      ```
      ⚠️ Use o path `work-items/.../work-item-properties/.../values/` (o alias `issues/.../issue-properties/.../values/` rejeita com 405/500). `value` é número (ex: `9.32`), não `"9.32"`.
 
