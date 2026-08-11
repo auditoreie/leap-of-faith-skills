@@ -98,7 +98,7 @@ Content-Type: application/json
         ]
       }
     },
-    { "type": "FOOTER", "text": "Sintetiza Health" },
+    { "type": "FOOTER", "text": "Provider One" },
     {
       "type": "BUTTONS",
       "buttons": [

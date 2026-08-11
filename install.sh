@@ -60,6 +60,16 @@ while IFS= read -r skillmd; do
   fi
 done < <(find "$SKILLS_SRC" -name SKILL.md -type f | sort)
 
+# Gate de validação: todo commit neste repo passa pelo scan antes de entrar.
+if [[ -d "$REPO_DIR/.git" && -d "$REPO_DIR/.githooks" ]]; then
+  chmod +x "$REPO_DIR/.githooks/pre-commit" 2>/dev/null || true
+  if git -C "$REPO_DIR" config core.hooksPath .githooks; then
+    echo "Hook de validação ativado (core.hooksPath = .githooks)."
+  else
+    echo "Aviso: não consegui configurar core.hooksPath — rode o scan manualmente antes do commit." >&2
+  fi
+fi
+
 echo ""
 echo "Resumo: $created criado(s), $relinked re-linkado(s), $skipped pulado(s)."
 echo "Skills em $SKILLS_DEST:"
