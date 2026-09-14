@@ -35,7 +35,7 @@ Monta o **PR de release** de `<head>` para `<base>`: o que muda, o changelog e a
    ```bash
    bash scripts/prs-entre-branches.sh <base> <head>
    ```
-   Saída: números de PR mergeados em `<head>` e ausentes em `<base>`, mais commits diretos sem PR (ex.: hotfix). O script une três fontes: merge commits, `gh pr list` casado por SHA (pega **PR empilhado**, que não tem merge commit próprio, e squash) e a API commit→PR (rebase). A seção **"PRs sem merge commit próprio"** vai como nota na tabela de PRs — é o PR que o revisor não vê no `git log --merges`. Se vier vazio, pare: "nada a liberar entre `<head>` e `<base>`". Se o script avisar que `gh` não estava autenticado, confira `git log --oneline <base>..<head>` contra a lista antes de seguir.
+   Saída: números de PR mergeados em `<head>` e ausentes em `<base>`, mais commits diretos sem PR (ex.: hotfix). O script une três fontes: merge commits, `gh pr list` casado por SHA (pega **PR empilhado**, que não tem merge commit próprio, e squash) e a API commit→PR (rebase). A seção **"PRs sem merge commit próprio"** vai como nota na tabela de PRs — é o PR que o revisor não vê no `git log --merges`. O script imprime cabeçalhos mesmo sem itens; o critério de parada é o **contador**, não a saída vazia: com `prs=0 commits_diretos=0` no resumo, pare: "nada a liberar entre `<head>` e `<base>`". Se o script avisar que `gh` não estava autenticado, confira `git log --oneline <base>..<head>` contra a lista antes de seguir.
 
 2. **Toggles no código — antes de ler qualquer PR**, para não ser influenciado pelo que o dev declarou:
    ```bash
@@ -63,7 +63,7 @@ Monta o **PR de release** de `<head>` para `<base>`: o que muda, o changelog e a
 
 6. **Changelog.** Leia `conventions.md` e escreva. Agrupe por área, Breaking primeiro. Uma entrada por mudança de comportamento observável — não por PR, não por commit.
 
-   **Changelog do produto.** Se o repo tem changelog voltado ao usuário (`docs/product/CHANGELOG.md` ou equivalente: `find . -maxdepth 3 -iname 'CHANGELOG*' -not -path '*/node_modules/*'`), veja se `<head>` já tem entrada para esta release. Se não, o PR de release ganha um bloco **pronto para colar**, na voz do arquivo (leia as duas últimas entradas para copiar o tom), e sinaliza que publicar item de segurança é decisão do time. Não edite o arquivo aqui: ele entra por PR próprio em `<head>`.
+   **Changelog do produto.** Se o repo tem changelog voltado ao usuário (`docs/product/CHANGELOG.md` ou equivalente: `find . -maxdepth 3 -iname 'CHANGELOG*' -not -path '*/node_modules/*'`), leia as entradas de `<head>` desde a data do merge-base e, **para cada entrada do changelog desta release**, marque: `presente` (há correspondente lá), `ausente por decisão` (comentário de task ou PR diz para não publicar; cite onde) ou `ausente sem decisão` (esquecimento provável). O resultado vai na seção "Changelog do produto" do template. Para as ausentes sem decisão, inclua um bloco **pronto para colar**, na voz do arquivo (leia as duas últimas entradas para copiar o tom), e sinalize que publicar item de segurança é decisão do time. Não edite o arquivo aqui: ele entra por PR próprio em `<head>`.
 
 7. **Rascunho.** Preencha `templates/release-pr.md`.
    - **Modo criar:** imprima no terminal e **pare**. Só continue com "ok"/"pode abrir".

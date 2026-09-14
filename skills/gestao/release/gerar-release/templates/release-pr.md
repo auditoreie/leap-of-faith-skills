@@ -73,7 +73,13 @@ Não são toggles, mas o scan os lista: `<VAR>` (<por quê é config e não rami
 
 ## Changelog do produto
 
-<!-- Só se o repo tiver changelog de usuário e <head> não tiver entrada desta release: bloco pronto para colar, na voz do arquivo. -->
+<!-- Só se o repo tiver changelog de usuário. Uma linha por entrada do changelog acima: a ausência tem que ser decisão, não esquecimento. -->
+
+| entrada desta release | no changelog público? | decisão e onde está registrada |
+|---|---|---|
+| <área: o que mudou> | presente / ausente por decisão / ausente sem decisão | <comentário da task/PR, ou "—"> |
+
+<!-- Para as "ausente sem decisão": bloco pronto para colar, na voz do arquivo. Publicar item de segurança é decisão do time. -->
 
 ## Fora desta release
 

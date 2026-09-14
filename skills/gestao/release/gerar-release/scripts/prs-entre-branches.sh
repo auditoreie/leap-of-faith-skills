@@ -27,12 +27,18 @@ BASE_NAME="${BASE_NAME:-${BASE#origin/}}"
 
 # Aceita branch (resolve para origin/<b>), ref ja qualificada (origin/x, tag) ou hash.
 resolve() {
-  local r="$1"
-  if git rev-parse --verify --quiet "origin/$r" >/dev/null 2>&1; then
-    git fetch origin "$r" --quiet 2>/dev/null || true
-    echo "origin/$r"
+  local r="$1" b="${1#origin/}"
+  # Fetch ANTES de validar: branch remota nova passa a existir localmente e
+  # branch conhecida fica atualizada. So cai na copia local se o fetch falhar,
+  # e avisa — inventario sobre ref velha e o erro mais silencioso desta skill.
+  if git fetch origin "$b" --quiet 2>/dev/null \
+     && git rev-parse --verify --quiet "origin/$b" >/dev/null 2>&1; then
+    echo "origin/$b"
   elif git rev-parse --verify --quiet "$r" >/dev/null 2>&1; then
-    echo "$r"
+    echo "$r"   # hash, tag ou branch so local
+  elif git rev-parse --verify --quiet "origin/$b" >/dev/null 2>&1; then
+    echo "aviso: fetch de origin/$b falhou; usando a copia local, que pode estar desatualizada" >&2
+    echo "origin/$b"
   else
     echo "ref nao encontrada: $r" >&2; exit 2
   fi
