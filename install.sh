@@ -24,7 +24,9 @@ relinked=0
 seen=" "  # lista de nomes já vistos (compatível com bash 3.2, sem arrays assoc.)
 
 # Cada diretório que contém um SKILL.md é uma skill (em qualquer profundidade).
-while IFS= read -r skillmd; do
+# fd 3 para a lista de skills: o `read` do prompt de conflito usa o stdin de verdade,
+# não a próxima linha do find (bug que pulava a skill seguinte a cada conflito).
+while IFS= read -r -u 3 skillmd; do
   skill_dir="$(cd "$(dirname "$skillmd")" && pwd)"
   name="$(basename "$skill_dir")"
   target="$SKILLS_DEST/$name"
@@ -58,7 +60,7 @@ while IFS= read -r skillmd; do
     ln -s "$skill_dir" "$target"
     created=$((created + 1))
   fi
-done < <(find "$SKILLS_SRC" -name SKILL.md -type f | sort)
+done 3< <(find "$SKILLS_SRC" -name SKILL.md -type f | sort)
 
 # Gate de validação: todo commit neste repo passa pelo scan antes de entrar.
 if [[ -d "$REPO_DIR/.git" && -d "$REPO_DIR/.githooks" ]]; then
@@ -72,5 +74,6 @@ fi
 
 echo ""
 echo "Resumo: $created criado(s), $relinked re-linkado(s), $skipped pulado(s)."
+echo "Primeira vez numa pasta de cliente? Abra o Claude nela e rode /onboarding-ecossistema (gera <raiz>/.claude/ecossistema.json, fora de repo público)."
 echo "Skills em $SKILLS_DEST:"
 ls -1 "$SKILLS_DEST" | sed 's/^/  - /'
