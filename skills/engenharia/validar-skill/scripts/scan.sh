@@ -62,7 +62,7 @@ echo ""
 
 # --- 1. nomes de arquivo proibidos -----------------------------------------
 
-FORBIDDEN_NAMES='(^|/)(\.env($|\..*)|\.envrc|.*\.pem$|.*\.key$|.*\.p12$|.*\.pfx$|.*\.jks$|.*\.keystore$|id_rsa.*|id_dsa.*|id_ecdsa.*|id_ed25519.*|credentials(\.json)?$|service-account.*\.json$|\.npmrc$|\.pypirc$|\.netrc$|plane_config\.json$|.*\.sqlite3?$|.*\.dump$|.*\.bak$)'
+FORBIDDEN_NAMES='(^|/)(\.env($|\..*)|\.envrc|.*\.pem$|.*\.key$|.*\.p12$|.*\.pfx$|.*\.jks$|.*\.keystore$|id_rsa.*|id_dsa.*|id_ecdsa.*|id_ed25519.*|credentials(\.json)?$|service-account.*\.json$|\.npmrc$|\.pypirc$|\.netrc$|plane_config\.json$|ecossistema\.json$|gcp-servicos\.md$|.*\.sqlite3?$|.*\.dump$|.*\.bak$)'
 
 while IFS= read -r f; do
   [[ -z "$f" ]] && continue
