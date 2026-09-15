@@ -46,6 +46,11 @@ precisam ser únicos.
 |---|---|
 | **`desmond`** | Modo de orquestração de acionamento explícito (`/desmond`): planeja antes de agir, despacha cada trabalho pro agente mais barato que dá conta e reserva o modelo de fronteira pra síntese e decisão. Para tarefa grande e multi-arquivo com o mínimo de tokens. |
 | **`validar-skill`** | Gate de contribuição. Audita uma skill ou o PR inteiro antes de publicar: bloqueia segredo, `.env`, chave privada, PII e dado de cliente; valida frontmatter, nome único e estrutura; reprova escopo inválido e conteúdo prejudicial. Inclui `scripts/scan.sh`. |
+| **`rodar-testes`** | Escolhe, escreve e roda os testes certos para uma mudança dentro dos limites da máquina (workers limitados, uma suíte por vez, nunca em background): detecta os comandos do repo, nomeia o invariante e reporta o que rodou e o que não rodou. |
+| **`migracao-segura-prisma-mongo`** | Expand/contract para schema Prisma sobre MongoDB (sem Migrate): classifica a mudança, ordena deploy × `db push` × backfill idempotente com dry-run, e entrega o plano para a classe de risco `schema` do PR. |
+| **`auditoria-arquitetural`** | Código morto, duplicação e ciclos de import num escopo TypeScript, com scanner `rg` + `madge` que entende DI do Nest e templates Angular; rastreia uso antes de declarar algo morto. |
+| **`debug-causa-raiz`** | Bug até a causa raiz antes de qualquer fix: reproduz, instrumenta fronteiras, uma hipótese por vez, teste que falha primeiro; três tentativas falhas viram questão de arquitetura. |
+| **`rebase-seguro`** | Rebase com backup ref, confirmação explícita, conflitos lidos dos dois lados e publicação só com `--force-with-lease` autorizado. |
 
 ### gestao
 
@@ -56,16 +61,25 @@ precisam ser únicos.
 | **`iniciar-task`** | Move a task pra In Progress, inicia o cronômetro, lê objetivo e definition of done, e começa a executar. |
 | **`reportar-task`** | Comenta na task com progresso e PR; opcionalmente loga tempo e custo de IA (via `ccusage`). **Não fecha.** |
 | **`fechar-task`** | Encerra o ciclo: worklog, tokens, custo e comentário de resumo. |
+| **`onboarding-ecossistema`** | Uma vez por cliente: detecta os repos de uma pasta raiz e o harness de cada um, pergunta lista do ClickUp, campos e serviços GCP, e grava `<raiz>/.claude/ecossistema.json` + `ecossistema/*.md` — fora de qualquer repo público. |
+| **`criar-task`** | Discovery + validação + criação de task no ClickUp: enquadra o repo, lê CLAUDE.md e ADRs, faz pré-triagem (PR aberto, branch, task duplicada), pergunta o que o código não responde, projeta localmente e cria na lista configurada com assignee e link. |
+| **`licoes-aprendidas`** | A lição de engenharia que uma branch, PR ou task demonstra, ancorada em commit e arquivo:linha; destino opt-in em comentário ou nota de ADR. |
 
 Fronteira do fluxo Plane: `iniciar` (começa) → `reportar` (meio, sem fechar) → `fechar` (encerra).
 Nenhuma delas tem workspace ou Project ID fixo — tudo é resolvido em runtime a partir de
 `~/.claude/plane_config.json` e do prefixo do task ID.
+
+Fluxo ClickUp: `onboarding-ecossistema` (uma vez por cliente) → `criar-task` (por demanda). IDs de workspace, lista e
+campos, repos e mapa GCP ficam em `<raiz>/.claude/ecossistema.json` e `ecossistema/*.md`, nunca neste repositório —
+`validar-skill` bloqueia esses arquivos no commit.
 
 ### integracoes
 
 | Skill | O que faz |
 |---|---|
 | **`meta-waba`** | Referência curada da WhatsApp Business Platform: templates (incluindo header de vídeo por Resumable Upload), ciclo de vida de números, webhooks com HMAC SHA-256, Flows com endpoint criptografado, analytics, Embedded Signup/Tech Provider e códigos de erro reais. Detalhe em `references/`, com scripts em TypeScript. |
+| **`logs-gcp`** | Observabilidade somente leitura no GCP (Cloud Run, Cloud Build, Error Reporting, Firebase Hosting) enquanto não há Sentry: logs por serviço/janela/texto, revisões e tráfego, deploys recentes, grupos de erro. |
+| **`consultar-docs`** | Documentação atualizada e versionada via Context7 CLI (`npx ctx7`) antes de responder de memória, com IDs pré-resolvidos para NestJS, Prisma, Angular, RxJS, Jest e outras. |
 
 ## Começando
 
