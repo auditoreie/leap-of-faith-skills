@@ -1,0 +1,34 @@
+{
+  "nome": "<slug do ecossistema, ex.: acme>",
+  "criado_em": "<AAAA-MM-DD>",
+  "tracker": {
+    "tipo": "clickup",
+    "workspace_id": "<id numérico>",
+    "space_id": "<id>",
+    "folder_id": "<id do folder onde ficam as listas de alocação; escopo da busca de duplicata>",
+    "list_id": "<id da lista onde as tasks nascem>",
+    "list_nome": "<nome exato da lista>",
+    "prefixo_task": "<PREFIXO do custom id, ex.: PROJ>",
+    "status_inicial": "<status default da lista, ex.: backlog>",
+    "campos": {
+      "produto":       { "id": "<uuid do campo>", "tipo": "labels",    "opcoes": { "<Label>": "<uuid>" } },
+      "escopo_deploy": { "id": "<uuid do campo>", "tipo": "drop_down", "opcoes": { "<Opção>": "<uuid>" } },
+      "tipo_report":   { "id": "<uuid do campo>", "tipo": "drop_down", "opcoes": { "Erro": "<uuid>", "Melhoria": "<uuid>", "Suporte": "<uuid>" } }
+    }
+  },
+  "repos": [
+    {
+      "nome": "<Produto>",
+      "caminho": "<pasta relativa à raiz>",
+      "remote": "<org/repo>",
+      "integracao": "<branch onde PRs entram, ex.: dev>",
+      "producao": "<branch de produção, ex.: main>",
+      "harness": "<caminho do CLAUDE.md relativo à raiz>",
+      "adrs": "<pasta de ADRs relativa ao repo>",
+      "campos": { "produto": "<Label do campo produto>", "escopo_deploy": "<Opção do campo escopo>" }
+    }
+  ],
+  "gcp": { "projeto": "<project id>", "regiao_default": "<ex.: us-central1>", "mapa": ".claude/ecossistema/gcp-servicos.md" },
+  "produtos_md": ".claude/ecossistema/produtos.md",
+  "pendente": []
+}
