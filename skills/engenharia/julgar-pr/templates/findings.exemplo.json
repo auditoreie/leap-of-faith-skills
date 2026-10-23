@@ -1,0 +1,46 @@
+{
+  "language": "pt-BR",
+  "round": 1,
+  "carryover": {"blocker": 0, "should-fix": 0},
+  "verdict": "REQUEST_CHANGES",
+  "summary": "## TL;DR\nO PR extrai o cálculo de desconto para `aplicarDesconto` e cobre o caminho feliz com teste. Veredito: REQUEST_CHANGES, porque a divisão por `itens.length` quebra com carrinho vazio, caminho que o checkout público alcança.\n\n## Achados\n| ID | Severidade | Local | Resumo |\n|---|---|---|---|\n| F1 | 🔴 blocker | src/cobranca/parcela.ts:142 | divisão por zero com lista vazia |\n| F2 | 🟠 should-fix | src/cobranca/parcela.ts:150 | arredondamento em float antes de somar centavos |\n| F3 | 🟡 nit | src/cobranca/parcela.ts:131 | comentário repete o código |\n| F4 | 🟣 pre-existing | src/cobranca/parcela.ts | `calcularJuros` ignora o fuso na data de vencimento |\n\n## Promover a lint rule\nnenhuma\n\n## Pesquisa\n- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed sustenta F2: `toFixed` arredonda sobre a representação binária e não serve para centavos.\n\n## Checagens\nbun run gates origin/dev: lint ok, tsc ok, jest 41 passou, 0 falhou, 0 pulado. Scanner: 0 candidato.\n\n## Arquivos pulados\nbun.lock",
+  "findings": [
+    {
+      "id": "F1",
+      "path": "src/cobranca/parcela.ts",
+      "line": 142,
+      "severity": "blocker",
+      "body": "🔴 `aplicarDesconto` divide por `itens.length` sem guarda para lista vazia (src/cobranca/parcela.ts:142). Com carrinho vazio o resultado é `NaN` e a parcela é gravada assim. Guarda de uma linha no topo: retornar `0` quando `itens.length === 0`. Reproduzido com `bun x jest src/tests/cobranca/parcela.spec.ts -t 'lista vazia'`: 1 falhou.",
+      "evidence": [
+        {"type": "internal", "ref": "src/cobranca/parcela.ts:142"},
+        {"type": "repro", "ref": "bun x jest src/tests/cobranca/parcela.spec.ts -t 'lista vazia'"}
+      ]
+    },
+    {
+      "id": "F2",
+      "path": "src/cobranca/parcela.ts",
+      "line": 150,
+      "severity": "should-fix",
+      "body": "🟠 O desconto é arredondado com `toFixed(2)` e convertido de volta para número antes da soma (src/cobranca/parcela.ts:150). Centavos somados em float acumulam erro de 1 centavo em parcelamentos longos. Some em centavos inteiros e arredonde uma vez no fim, com o `toCents` que já existe em `src/utils/money.ts`.",
+      "evidence": [
+        {"type": "internal", "ref": "src/cobranca/parcela.ts:150"},
+        {"type": "external", "ref": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed"}
+      ]
+    },
+    {
+      "id": "F3",
+      "path": "src/cobranca/parcela.ts",
+      "line": 131,
+      "severity": "nit",
+      "body": "🟡 O comentário repete o nome da função logo abaixo (src/cobranca/parcela.ts:131). Remover.",
+      "evidence": []
+    },
+    {
+      "id": "F4",
+      "path": "src/cobranca/parcela.ts",
+      "severity": "pre-existing",
+      "body": "🟣 `calcularJuros` converte a data de vencimento com `new Date('YYYY-MM-DD')`, meia-noite UTC, e cai no dia anterior em America/Sao_Paulo. Anterior ao PR; cabe issue própria.",
+      "evidence": []
+    }
+  ]
+}
