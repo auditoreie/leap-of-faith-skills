@@ -27,6 +27,7 @@ Antes de perguntar qualquer coisa, responda você mesmo o que a codebase respond
 - Toda pergunta chega **fundamentada**: "encontrei X e Y na base; X implica A, Y implica B — recomendo X porque Z". Nunca pergunta genérica de menu.
 - Agrupe em **um único** `AskUserQuestion` (até 4 perguntas), com a recomendação como primeira opção marcada "(Recommended)".
 - Só pergunte o que **muda o que você vai fazer**. Havendo default óbvio, assuma, declare em uma frase e siga.
+- Mais de uma decisão em aberto, ou decisão que depende de outra: chame a skill `entrevistar` (rodadas sobre a fronteira, cada pergunta com recomendação) em vez de uma leva única de 4 perguntas.
 
 ### 3. Despachar — o agente certo pra cada trabalho
 A matriz. Custo por MTok (in/out): haiku $1/$5 · sonnet $3/$15 · opus $5/$25 · fable $10/$50 — cada linha existe pra pagar o mínimo que resolve:

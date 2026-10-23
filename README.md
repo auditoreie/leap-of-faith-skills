@@ -16,6 +16,7 @@ leap-of-faith-skills/
 ├── skills/
 │   ├── engenharia/               ← como o agente trabalha
 │   │   ├── desmond/                  orquestração token-efficient (acionamento explícito)
+│   │   ├── entrevistar/              entrevista em rodadas até fechar as decisões (primitiva)
 │   │   ├── julgar-pr/                review de PR com gate de evidência e publicação única
 │   │   └── validar-skill/            gate de contribuição: segredos, estrutura, escopo
 │   ├── gestao/                   ← fluxo de trabalho e rastreabilidade
@@ -46,6 +47,7 @@ precisam ser únicos.
 | Skill | O que faz |
 |---|---|
 | **`desmond`** | Modo de orquestração de acionamento explícito (`/desmond`): planeja antes de agir, despacha cada trabalho pro agente mais barato que dá conta e reserva o modelo de fronteira pra síntese e decisão. Para tarefa grande e multi-arquivo com o mínimo de tokens. |
+| **`entrevistar`** | Primitiva de perguntas (`/entrevistar <tema>`): mapeia o tema como árvore de decisões, pergunta a cada rodada só a fronteira, numera as perguntas com a recomendação na frente, resolve sozinha o que é fato e para quando a fronteira esvazia e o usuário confirma. `/spec`, `criar-task` e `desmond` chamam esta. |
 | **`julgar-pr`** | Review de PR com régua de evidência (`/julgar-pr 123 [publicar]`): roda o gate do próprio repo, passa o diff por scanner de bypass, obtém os achados pelo `/code-review`, verifica as afirmações do PR e só aceita texto que passe no `review_gate.py` (evidência obrigatória em blocker, máximo 5 nits, veredito consistente). Publica uma única review no GitHub só com `publicar`. Scripts vendorizados da the-judge (Tech Leads Club), ver `NOTICE.md`. |
 | **`validar-skill`** | Gate de contribuição. Audita uma skill ou o PR inteiro antes de publicar: bloqueia segredo, `.env`, chave privada, PII e dado de cliente; valida frontmatter, nome único e estrutura; reprova escopo inválido e conteúdo prejudicial. Inclui `scripts/scan.sh`. |
 
