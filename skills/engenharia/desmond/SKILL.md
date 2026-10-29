@@ -37,6 +37,7 @@ A matriz. Custo por MTok (in/out): haiku $1/$5 · sonnet $3/$15 · opus $5/$25 �
 | Caçar convenção/padrão, leitura ampla → 1 conclusão | `Explore` | `sonnet` | Precisa sintetizar, não só localizar |
 | Desenhar plano/arquitetura sem executar | `Plan` | default | Raciocínio de projeto, sem escrita |
 | Edições mecânicas repetitivas, migração, codemod | `general-purpose` | `sonnet`/`haiku` | Execução com pouco julgamento (`worktree` se mutarem em paralelo) |
+| Implementar feature/fix, corrigir achados, escrever testes | `general-purpose` | pela tabela de `/despachar-dev` | Complexidade escolhe quem implementa, risco escolhe quem verifica; ficha e tag `[C·R]` na descrição |
 | Trabalho que precisa do **contexto da conversa** em background | fork (`subagent_type: "fork"`) | herda o seu (override é ignorado) | Fork carrega a conversa inteira; roda em background sem poluir seu contexto |
 | Verificação adversarial de decisão crítica, review de risco alto | `general-purpose` | `fable` | Único caso que justifica $10/$50: estar errado custa mais que o agente |
 | Trade-off, síntese, decisão, edit com julgamento | **inline (você)** | — | É onde a fronteira agrega o que modelo barato não dá |
