@@ -57,7 +57,8 @@ if has grok; then
     seen_grok="${seen_grok:-} $dir"
     found=1
     if [ "$dir" = "$HOME/.grok" ]; then name=default
-    elif [ "$dir" = "${GROK_HOME:-}" ]; then name="$(basename "$dir" | sed 's/^\.grok-//') (GROK_HOME)"
+    elif [ "$dir" = "${GROK_HOME:-}" ]; then name="$(basename "$dir" | sed 's/^\.grok-//')"
+      [ "$TSV" = 1 ] || name="$name (GROK_HOME)"
     else name="$(basename "$dir" | sed 's/^\.grok-//')"; fi
     line "grok" "$name" "instalado (login não verificável sem chamar o modelo)" "GROK_HOME=$dir"
   done

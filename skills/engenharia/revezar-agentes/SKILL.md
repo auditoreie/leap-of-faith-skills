@@ -124,9 +124,9 @@ passo. Ninguém digita variável de ambiente. No Orca, Claude e Codex também tr
    `references/agentes.md`, que também diz como acompanhar e recolher relatórios sem Orca, em
    `$HOME/.cache/revezar/<slug>.json`). Inicie todos e encerre o turno; com Orca, siga a skill
    `orchestration` (sem polling).
-4. **Receber.** Relatório fora do schema, status `bloqueado` ou diff fora dos arquivos da ficha: não
-   aceito. Status `precisa de decisão`: leve a decisão ao usuário, devolva ao worker e espere o
-   `concluído`; relatório pendente nunca é aceito como pronto.
+4. **Receber.** Relatório fora do schema, `bloqueado` ou diff fora dos arquivos da ficha: não aceito.
+   `precisa de decisão`: leve ao usuário; aprovado arquivo extra, inclua-o em "Arquivos esperados"
+   antes de devolver ao worker. Só `concluído` é aceito como pronto.
 5. **Integrar e conferir.** Mais de um worker na mesma entrega: crie a branch de integração a partir
    de `origin/<integração>`, traga os commits aceitos de cada worker (`git merge --no-ff` ou
    `cherry-pick`), confira o diff e rode o gate nela, via `slot.sh`.

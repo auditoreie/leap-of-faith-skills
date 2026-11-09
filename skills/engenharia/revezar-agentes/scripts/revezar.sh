@@ -4,7 +4,9 @@
 #   ln -s <skill>/scripts/revezar.sh ~/.local/bin/revezar
 #
 #   revezar                          menu: conta → linha de trabalho → abre
-#   revezar --jail …                 o mesmo, isolado no ai-jail (obrigatório para worker)
+#   revezar --jail <ag> <conta> <ws> [-- args nativos]
+#                                    worker: isolado no ai-jail sem credenciais montadas, sem
+#                                    instrução de bastão (o contexto vai pela ficha)
 #   revezar <agente> <conta> [linha] direto, sem menu (ex.: revezar codex default HMAXX-1-x)
 #   revezar status                   contas e estado de login
 #   revezar login <agente> <conta>   cria a pasta da conta e abre o login do CLI
@@ -13,6 +15,7 @@ set -uo pipefail
 
 SELF="$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")"
 DIR="$(cd "$(dirname "$SELF")" && pwd)"
+CACHE="$HOME/.cache/revezar"   # relatórios e vagas de teste; compartilhado com os workers no jail
 
 die() { echo "revezar: $*" >&2; exit 1; }
 has() { command -v "$1" >/dev/null 2>&1; }
@@ -56,7 +59,7 @@ cmd_login() {
   local agente="${1:-}" conta="${2:-}"
   [ -n "$agente" ] && [ -n "$conta" ] || die "uso: revezar login <claude|codex|grok> <conta>"
   case "$agente" in
-    claude) local d="${CCA_HOME:-$HOME/.claude-accounts}/$conta"; mkdir -p "$d"
+    claude) local d="${CCA_HOME:-$HOME/.claude-accounts}/$conta"; [ "$conta" = default ] && d="$HOME/.claude"; mkdir -p "$d"
             CLAUDE_CONFIG_DIR="$d" claude auth login ;;
     codex)  local d="$HOME/.codex-$conta"; [ "$conta" = default ] && d="$HOME/.codex"; mkdir -p "$d"
             CODEX_HOME="$d" codex login ;;
@@ -92,7 +95,9 @@ cmd_open() {
   IFS=$'\t' read -r agente conta estado env _ <<<"$sel"
   [ "$estado" = deslogada ] && die "$agente/$conta está deslogada: revezar login $agente $conta"
 
-  local ws="${1:-}" existentes novo=0
+  local ws="${1:-}" existentes novo=0 nativos=()
+  [ -n "$ws" ] && shift
+  [ "${1:-}" = "--" ] && { shift; nativos=("$@"); }
   existentes="$(ai-memory workstreams --json 2>/dev/null |
     python3 -c 'import json,sys; [print(w["name"]) for w in json.load(sys.stdin)]' 2>/dev/null || true)"
   if [ -n "$ws" ]; then
@@ -107,12 +112,17 @@ cmd_open() {
   fi
 
   local h; h="$(harness_of "$agente")" || die "sem harness para $agente"
-  local args=(run --env "REVEZAR_CONTA=$agente/$conta")
-  [ "$jail" = 1 ] && args+=(--jail)
+  local args=(run --env "REVEZAR_CONTA=$agente/$conta" --env "REVEZAR_SLOT=$DIR/slot.sh" --env "REVEZAR_SLOTS_DIR=$CACHE/slots")
+  if [ "$jail" = 1 ]; then
+    mkdir -p "$CACHE/slots"
+    args+=(--jail=none --jail-map "$DIR" --jail-rw-map "$CACHE")
+  fi
   [ -n "$env" ] && args+=(--env "$env")
   if [ "$novo" = 1 ]; then args+=(--new "$ws"); else args+=(--workstream "$ws"); fi
   args+=("$h")
-  if ai-memory read-page --path "bastoes/$ws.md" >/dev/null 2>&1; then
+  if [ "${#nativos[@]}" -gt 0 ]; then
+    args+=("${nativos[@]}")
+  elif [ "$jail" = 0 ] && ai-memory read-page --path "bastoes/$ws.md" >/dev/null 2>&1; then
     local proj; proj="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
     args+=("Leia o bastão com: ai-memory read-page --path bastoes/$ws.md (rodado em $proj, que define workspace e projeto). Siga do 'Próximo passo exato'; não reabra as decisões do dono.")
   fi

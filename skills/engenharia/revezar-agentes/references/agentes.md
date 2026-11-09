@@ -6,8 +6,19 @@ se uma falhar, rode `<cli> --help` antes de improvisar. Itens marcados **(piloto
 provados ponta a ponta; o passo 6 do `SKILL.md` prova.
 
 `$FICHA` = conteúdo de `templates/ficha.md` preenchida. `$WT` = caminho da worktree do worker.
-`$SCHEMA` = `templates/relatorio.schema.json`. `$REL` = `$HOME/.cache/revezar/<slug>.json`, um por
-worker (fora da worktree, para não entrar em commit nem colidir com outro worker).
+`$SCHEMA` = `templates/relatorio.schema.json`. `$REL` = `$HOME/.cache/revezar/<slug>-<AAAAMMDD-HHMM>.json`,
+um por execução (fora da worktree: não entra em commit, não colide, não se confunde com execução antiga).
+Antes do primeiro worker: `mkdir -p "$HOME/.cache/revezar"`.
+
+**Worker sem interface, sempre isolado e na conta certa** (os comandos das seções abaixo entram como
+argumentos nativos depois do `--`; o relatório só aparece como `$REL` quando o worker termina bem):
+
+```bash
+revezar --jail <agente> <conta> <workstream> -- <argumentos nativos do CLI> > "$REL.parcial" \
+  && mv "$REL.parcial" "$REL" || mv "$REL.parcial" "$REL.falhou"
+```
+
+**(piloto)** o ai-memory repassa os argumentos nativos (`exec`, `-p`) dentro do jail.
 
 ## Conta (todos)
 
@@ -63,8 +74,8 @@ reduz acertos de cache ([prompt caching](https://openrouter.ai/docs/guides/best-
 
 ## Sem Orca: acompanhar e recolher
 
-- Cada worker grava o relatório em `$REL` (`$HOME/.cache/revezar/<slug>.json`) só ao terminar:
-  `ls -t $HOME/.cache/revezar/` mostra quem terminou.
+- `$REL.parcial` = em andamento; `$REL` = terminou bem; `$REL.falhou` = saiu com erro.
+  `ls -t $HOME/.cache/revezar/` mostra o estado de cada execução.
 - Em andamento: `ai-memory recent` (sessões capturadas) e o terminal do próprio worker.
 - Recolher = ler o `$REL`, validar contra o schema e seguir o passo 5.4 do `SKILL.md`. Worker sem
   relatório e sem atividade no `ai-memory recent` há mais de 30 min: olhe o terminal dele antes de
@@ -74,7 +85,7 @@ reduz acertos de cache ([prompt caching](https://openrouter.ai/docs/guides/best-
 
 | Item | Valor |
 |---|---|
-| Sem interface | `cd "$WT" && claude -p "$FICHA" --output-format json --model <modelo> --permission-mode acceptEdits --disallowedTools "Bash(git push:*)" "Bash(gh pr:*)" > "$REL"` |
+| Argumentos nativos | `-p "$FICHA" --output-format json --model <modelo> --permission-mode acceptEdits --disallowedTools "Bash(git push:*)" "Bash(gh pr:*)"` (rodar de dentro de `$WT`) |
 | Relatório | a saída JSON do `-p` embrulha a resposta: o relatório é o texto do campo `result`. Extraia (`jq -r .result "$REL"`) e só então valide contra o schema |
 | Retomar | `claude --resume <session_id>` (o `session_id` está na mesma saída JSON); `--continue` pega a sessão mais recente da pasta e pode ser outra |
 | Sinal de limite | `You've hit your … limit · resets <quando>` |
@@ -87,7 +98,7 @@ resto. O Claude não tem flag de schema no `-p`; o schema vai no fim da ficha.
 
 | Item | Valor |
 |---|---|
-| Sem interface | `codex exec -C "$WT" --sandbox workspace-write --json --output-schema "$SCHEMA" -o "$REL" -m <modelo> "$FICHA"` |
+| Argumentos nativos | `exec -C "$WT" --sandbox workspace-write --output-schema "$SCHEMA" -m <modelo> "$FICHA"` (a mensagem final, já no schema, sai no stdout) |
 | Retomar | `codex resume <id>` (ou `--last` se só houver uma sessão na pasta) |
 | Login | `revezar status` (usa o código de saída de `codex login status`) |
 | Nunca | `--dangerously-bypass-approvals-and-sandbox`, `--sandbox danger-full-access` |
@@ -98,7 +109,7 @@ resto. O Claude não tem flag de schema no `-p`; o schema vai no fim da ficha.
 
 | Item | Valor |
 |---|---|
-| Sem interface | `grok -p "$FICHA" --cwd "$WT" --output-format json --json-schema "$(cat "$SCHEMA")" -m <modelo> --deny "Bash(git push:*)" > "$REL"` **(piloto)** |
+| Argumentos nativos | `-p "$FICHA" --cwd "$WT" --output-format json --json-schema "$(cat "$SCHEMA")" -m <modelo> --deny "Bash(git push:*)"` **(piloto)** |
 | Retomar | `revezar grok <conta> <workstream>` |
 | Nunca | `--always-approve` |
 
@@ -106,7 +117,7 @@ resto. O Claude não tem flag de schema no `-p`; o schema vai no fim da ficha.
 
 | Item | Valor |
 |---|---|
-| Sem interface | `cursor-agent -p --output-format json --workspace "$WT" --sandbox enabled --model <modelo> "$FICHA" > "$REL"` **(piloto)** |
+| Argumentos nativos | `-p --output-format json --workspace "$WT" --sandbox enabled --model <modelo> "$FICHA"` **(piloto)** |
 | Modelos | `cursor-agent --list-models` |
 | Retomar | `cursor-agent --resume <id>`, ou `revezar cursor-agent default <workstream>` |
 | Login | `cursor-agent status` |

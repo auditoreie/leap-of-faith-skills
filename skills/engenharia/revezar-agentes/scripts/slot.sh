@@ -3,19 +3,24 @@
 # comandos pesados ao mesmo tempo, vindos de qualquer worker ou do orquestrador.
 #   slot.sh -- <comando de teste ou build>
 # Espera em foreground até abrir uma vaga, roda o comando e libera a vaga ao sair (mesmo com erro
-# ou Ctrl-C). Vaga de processo morto é recuperada. Sai com o código do comando.
+# ou Ctrl-C, encerrando o comando junto). A vaga guarda o PID do comando e só é recuperada quando
+# ele morreu. Sai com o código do comando.
 set -uo pipefail
 
 [ "${1:-}" = "--" ] && shift
 [ $# -gt 0 ] || { echo "uso: slot.sh -- <comando>" >&2; exit 2; }
 
 slots="${REVEZAR_SLOTS:-2}"
-base="${TMPDIR:-/tmp}/revezar-slots"
+base="${REVEZAR_SLOTS_DIR:-$HOME/.cache/revezar/slots}"   # o mesmo dentro e fora do jail
 mkdir -p "$base"
 mine=""
 waited=0
 
-release() { [ -n "$mine" ] && rm -f "$mine/pid" && rmdir "$mine"; }
+child=""
+release() {
+  if [ -n "$child" ] && kill -0 "$child" 2>/dev/null; then kill "$child" 2>/dev/null; wait "$child" 2>/dev/null; fi
+  [ -n "$mine" ] && rm -f "$mine/pid" && rmdir "$mine"
+}
 trap release EXIT
 trap 'exit 130' INT TERM
 
@@ -38,4 +43,7 @@ while [ -z "$mine" ]; do
 done
 
 echo "slot.sh: vaga ${mine##*/}/$slots — $*" >&2
-"$@"
+"$@" &
+child=$!
+echo "$child" > "$mine/pid"   # a vaga passa a valer enquanto o comando viver
+wait "$child"
