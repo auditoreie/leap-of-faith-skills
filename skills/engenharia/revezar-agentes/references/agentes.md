@@ -21,17 +21,16 @@ abaixo e passa a certa ao agente.
 | grok | `~/.grok-<conta>` (`~/.grok` = default, ou `GROK_HOME`) **(piloto)** | `revezar login grok <conta>` |
 | cursor-agent | uma conta por máquina | `cursor-agent login` |
 
-Nos comandos sem interface abaixo, o worker sem Orca roda dentro de um terminal aberto por
-`revezar <agente> <conta> <workstream>`, ou recebe a mesma pasta no prefixo do comando
-(`CODEX_HOME=…`), copiada da saída de `revezar status`.
+Todo worker abre num terminal por `revezar --jail <agente> <conta> <workstream>` (conta certa,
+isolado no ai-jail). cursor-agent tem uma conta por máquina, por desenho do CLI: a troca de conta
+dele é por `cursor-agent login`.
 
 ## Orca (caminho padrão quando o Orca está no ar)
 
 | Item | Valor |
 |---|---|
-| Contas gerenciadas | Claude e Codex: `orca account list`; `orca account add --agent claude\|codex`; `orca account select --agent <x> --account <email\|rótulo\|system>` (vale para os próximos lançamentos) |
-| Grok e cursor-agent | `orca terminal create --worktree path:$WT --command "revezar <agente> <conta> <workstream>" --json`, depois `worker-start --terminal <handle> --worktree path:$WT` |
-| Worker | `orca orchestration worker-start --spec-file <ficha> --agent <x> --model <id> --effort <nível> --worktree new-top-level --repo id:<repoId> --name <slug>` (`orca repo list --json` dá o id) |
+| Worker | `orca terminal create --worktree path:$WT --command "revezar --jail <agente> <conta> <workstream>" --json` e, com o handle, `orca orchestration worker-start --terminal <handle> --worktree path:$WT --spec-file <ficha> --name <slug>` **(piloto: worker em ai-jail falando com o Orca)** |
+| Sessão interativa sua | Claude e Codex pela tela de contas do Orca (`orca account select`) e `orca agent launch`; não é worker, não precisa de jail |
 | Falar com worker | `orca orchestration send --to dispatch:<id> --subject "…" --body "…"`; nunca pelo terminal dele |
 | Status | `orca worktree ps`, `orca orchestration task-list`, `orca terminal list` |
 
@@ -52,9 +51,24 @@ reduz acertos de cache ([prompt caching](https://openrouter.ai/docs/guides/best-
 
 ## Segredos (todos)
 
-Bloqueio de leitura por regra do CLI (`--disallowedTools "Read(./.env*)"`, `--deny`) não cobre
-subprocesso: `cat .env` por Bash passa. A proteção é a worktree do worker não ter segredo
-(`git worktree add` não copia arquivo ignorado; não copie). O piloto prova com um `.env` isca.
+- Bloqueio de leitura por regra do CLI (`--disallowedTools "Read(./.env*)"`, `--deny`) não cobre
+  subprocesso: `cat .env` por Bash passa.
+- A sandbox dos CLIs limita escrita, não leitura: no Codex, `workspace-write` lê fora da worktree,
+  inclusive o `.env` do checkout original.
+- Por isso: worktree de worker sem segredo (`git worktree add` não copia arquivo ignorado) **e**
+  worker isolado no ai-jail (`revezar --jail`; home privado, `sandbox-exec` no macOS;
+  [ai-jail](https://github.com/akitaonrails/ai-jail), GPL-3.0, "not 100% secure"). Instalar:
+  `brew tap akitaonrails/tap && brew install ai-jail`.
+- O piloto prova com uma isca fora da worktree: a leitura tem que ser negada.
+
+## Sem Orca: acompanhar e recolher
+
+- Cada worker grava o relatório em `$REL` (`$HOME/.cache/revezar/<slug>.json`) só ao terminar:
+  `ls -t $HOME/.cache/revezar/` mostra quem terminou.
+- Em andamento: `ai-memory recent` (sessões capturadas) e o terminal do próprio worker.
+- Recolher = ler o `$REL`, validar contra o schema e seguir o passo 5.4 do `SKILL.md`. Worker sem
+  relatório e sem atividade no `ai-memory recent` há mais de 30 min: olhe o terminal dele antes de
+  relançar.
 
 ## Claude Code
 

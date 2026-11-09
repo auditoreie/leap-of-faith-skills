@@ -15,12 +15,14 @@ agente, conta ou sessão faça você perder o fio.
 2. **Contas:** uma pasta por conta, criada e logada pelo próprio atalho:
    `revezar login claude <conta>`, `revezar login codex <conta>`, `revezar login grok <conta>`.
    No Orca, Claude e Codex também entram pela tela de contas (`orca account add`).
-3. **ai-memory:** servidor no ar e hooks dos agentes instalados
+3. **Isolamento:** `brew tap akitaonrails/tap && brew install ai-jail`. Todo worker abre com
+   `revezar --jail`, que esconde o resto da máquina (incluindo os `.env` dos outros checkouts).
+4. **ai-memory:** servidor no ar e hooks dos agentes instalados
    (`ai-memory install-hooks --agent <agente> --apply`). Confira com `ai-memory doctor`.
-4. **Registro de contas:** crie `contas/estado.md` no projeto `_global` do ai-memory a partir de
+5. **Registro de contas:** crie `contas/estado.md` no projeto `_global` do ai-memory a partir de
    `templates/contas.md`, dizendo qual conta orquestra e quais trabalham. O menu do `revezar` mostra
    o "volta em" de cada conta a partir dele.
-5. **Piloto:** `/revezar-agentes despachar` uma tarefa trivial para cada CLI e conta numa worktree
+6. **Piloto:** `/revezar-agentes despachar` uma tarefa trivial para cada CLI e conta numa worktree
    descartável. Só entra no revezamento quem passar.
 
 ## No dia a dia

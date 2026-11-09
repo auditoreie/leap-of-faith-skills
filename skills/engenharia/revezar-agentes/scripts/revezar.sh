@@ -4,6 +4,7 @@
 #   ln -s <skill>/scripts/revezar.sh ~/.local/bin/revezar
 #
 #   revezar                          menu: conta → linha de trabalho → abre
+#   revezar --jail …                 o mesmo, isolado no ai-jail (obrigatório para worker)
 #   revezar <agente> <conta> [linha] direto, sem menu (ex.: revezar codex default HMAXX-1-x)
 #   revezar status                   contas e estado de login
 #   revezar login <agente> <conta>   cria a pasta da conta e abre o login do CLI
@@ -68,6 +69,11 @@ cmd_login() {
 
 cmd_open() {
   has ai-memory || die "ai-memory não instalado"
+  local jail=0
+  if [ "${1:-}" = "--jail" ]; then
+    jail=1; shift
+    has ai-jail || die "ai-jail não instalado (brew tap akitaonrails/tap && brew install ai-jail)"
+  fi
   local contas sel agente conta env estado
   contas="$(bash "$DIR/contas.sh" --tsv | awk -F'\t' '$2 != "-"')"
   [ -n "$contas" ] || die "nenhuma conta encontrada (rode: revezar status)"
@@ -102,6 +108,7 @@ cmd_open() {
 
   local h; h="$(harness_of "$agente")" || die "sem harness para $agente"
   local args=(run --env "REVEZAR_CONTA=$agente/$conta")
+  [ "$jail" = 1 ] && args+=(--jail)
   [ -n "$env" ] && args+=(--env "$env")
   if [ "$novo" = 1 ]; then args+=(--new "$ws"); else args+=(--workstream "$ws"); fi
   args+=("$h")
