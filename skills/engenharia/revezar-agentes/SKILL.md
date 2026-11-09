@@ -13,7 +13,7 @@ Paralelismo e controle mesmo quando os tokens acabam. Três camadas, cada uma co
 | Contexto | ai-memory (linha de trabalho, bastão, registro de contas) | o que sobrevive à troca de agente, conta, sessão ou ferramenta |
 | Regras | esta skill | peso → agente, ficha, relatório, gates, orçamento de cota |
 
-`<skill>` = pasta desta `SKILL.md` (`~/.claude/skills/revezar-agentes`). Guia para humanos: `GUIA.md`.
+`<skill>` = `~/.claude/skills/revezar-agentes`. Atalho `revezar` = `<skill>/scripts/revezar.sh`.
 
 **Argumento:** `$ARGUMENTS`
 
@@ -34,8 +34,7 @@ Paralelismo e controle mesmo quando os tokens acabam. Três camadas, cada uma co
   o que varia fica no fim; o cache do worker se reaproveita entre tarefas.
 - **Contexto externo entra pela ficha.** Task do ClickUp ou spec: o orquestrador lê em modo resumo
   e cola o essencial. Worker não chama MCP de tracker nem lê o ai-memory.
-- Leia `references/agentes.md` só ao montar o comando de um CLI sem interface, e `GUIA.md` só se o
-  usuário pedir para aprender o fluxo.
+- `references/agentes.md` só ao montar comando de CLI; `GUIA.md` só se o usuário pedir.
 
 ## Safe-mode (gates)
 
@@ -48,14 +47,12 @@ Paralelismo e controle mesmo quando os tokens acabam. Três camadas, cada uma co
 - **Segredo fora da worktree.** `git worktree add` não copia arquivo ignorado: worktree de worker
   nasce sem `.env` e ninguém copia um para lá. As regras de bloqueio de leitura dos CLIs não cobrem
   subprocessos; o que protege é o arquivo não existir ali. O piloto (passo 6) prova com uma isca.
-- **Memória não é isolada.** O servidor local do ai-memory não tem login nem escopo por projeto, então
-  "worker não usa o ai-memory" é regra da ficha, não barreira. O contexto do worker vai inteiro pela
-  ficha. Isolamento real depende de `ai-memory auth enable` (decisão do dono); até lá, tarefa com
-  dado sensível de cliente não vai para worker de outro fornecedor.
+- **Memória não é isolada:** o ai-memory local não tem login nem escopo por projeto; "worker não usa
+  o ai-memory" é regra da ficha, não barreira. Até `ai-memory auth enable` (decisão do dono), dado
+  sensível de cliente não vai para worker de outro fornecedor.
 - **Máquina:** até 4 workers ao mesmo tempo. Teste e build passam por `slot.sh`, que deixa no máximo 2
   rodando na máquina inteira (workers e orquestrador, com ou sem Orca), em foreground.
-- **Publicar é do usuário.** A skill entrega branch, diff resumido e resultado do gate. Push e PR só
-  quando o usuário pedir, pelas regras do repo; merge e deploy nunca.
+- **Publicar é do usuário:** a skill entrega branch, diff e gate; push e PR só a pedido; merge e deploy nunca.
 - Tarefa pesada nunca desce de classe para caber numa conta com saldo: grava o bastão e espera o
   reset, ou o usuário decide pagar uso extra.
 
@@ -81,10 +78,8 @@ orca account list && orca worktree ps                            # se o Orca est
 ai-memory read-page --project _global --path contas/estado.md   # resets e reservas
 ```
 
-Sem o atalho instalado: `bash <skill>/scripts/revezar.sh status`. Saldo restante não é legível de
-forma confiável por CLI: use o registro de contas, o aviso do agente ao bater o limite
-(`… limit · resets …`) e o que o usuário informar. Conta `deslogada`: `revezar login <agente> <conta>`
-por quem tem o navegador.
+Saldo restante não sai por CLI: use o registro de contas, o aviso de limite do agente e o que o
+usuário informar. Conta `deslogada`: `revezar login <agente> <conta>`, por quem tem o navegador.
 
 ### 2. Registro de contas (mantém a cota viva)
 
@@ -124,18 +119,11 @@ passo. Ninguém digita variável de ambiente. No Orca, Claude e Codex também tr
    arquivos não vão em paralelo.
 2. **Worktrees.** Uma por worker, a partir da integração: `git worktree add ../wt-<slug> -b <branch>
    origin/<integração>`. Sem `.env`, sem cópia de segredo.
-3. **Iniciar.**
-   - Com Orca, Claude/Codex: `orca account select --agent <x> --account <conta>` e
-     `orca orchestration worker-start --spec-file <ficha> --agent <x> --model <id> --effort <nível>
-     --worktree new-top-level --repo id:<repoId> --name <slug>`.
-   - Com Orca, Grok/cursor-agent: `orca terminal create --worktree path:<wt> --command "revezar
-     <agente> <conta> <workstream>" --json` e, com o handle devolvido, `orca orchestration
-     worker-start --terminal <handle> --worktree path:<wt> --spec-file <ficha> --name <slug>`.
-   - Sem Orca: em um terminal por worker, o comando sem interface de `references/agentes.md`, com o
-     relatório num arquivo próprio (`$HOME/.cache/revezar/<slug>.json`). Acompanhar: o arquivo do
-     relatório aparece quando o worker termina; `ai-memory recent` mostra a sessão.
-   - Inicie todos e encerre o turno. Com Orca, siga a skill `orchestration` (o Orca acorda o
-     orquestrador; sem polling).
+3. **Iniciar** cada worker na conta escolhida, pelo comando da seção "Orca" de
+   `references/agentes.md` (Claude/Codex por `orca account select` + `worker-start`; Grok/cursor por
+   terminal aberto com `revezar` + `worker-start --terminal`). Sem Orca: um terminal por worker com o
+   comando sem interface do CLI e o relatório em `$HOME/.cache/revezar/<slug>.json`. Inicie todos e
+   encerre o turno; com Orca, siga a skill `orchestration` (sem polling).
 4. **Receber.** Relatório fora do schema, status `bloqueado` ou diff fora dos arquivos da ficha: não
    aceito. Status `precisa de decisão`: leve a decisão ao usuário, devolva ao worker e espere o
    `concluído`; relatório pendente nunca é aceito como pronto.

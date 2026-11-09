@@ -15,7 +15,7 @@ mkdir -p "$base"
 mine=""
 waited=0
 
-release() { [ -n "$mine" ] && rm -rf "$mine"; }
+release() { [ -n "$mine" ] && rm -f "$mine/pid" && rmdir "$mine"; }
 trap release EXIT
 trap 'exit 130' INT TERM
 
@@ -27,7 +27,7 @@ while [ -z "$mine" ]; do
     fi
     pid="$(cat "$d/pid" 2>/dev/null || true)"
     if [ -n "$pid" ] && ! kill -0 "$pid" 2>/dev/null; then
-      rm -rf "$d"   # dono morreu: vaga liberada
+      rm -f "$d/pid"; rmdir "$d" 2>/dev/null   # dono morreu: vaga liberada
     fi
   done
   if [ -z "$mine" ]; then
