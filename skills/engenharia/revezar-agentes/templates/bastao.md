@@ -1,8 +1,9 @@
 # Bastão — <workstream>
 
-- **De:** <agente/conta> · **em:** <AAAA-MM-DD HH:MM> · **motivo:** <limite | troca de peso | fim do dia>
+- **De:** <agente/conta> · **em:** <AAAA-MM-DD HH:MM> (<fuso>) · **motivo:** <limite | troca de peso | fim do dia>
 - **Task:** <TASKID> — <link>
-- **Repo/worktree:** <caminho relativo ao workspace> · **branch:** <branch> · **último commit:** <hash>
+- **Repo/worktree:** <caminho absoluto> · **branch:** <branch> · **checkpoint:** <hash do commit `wip: checkpoint`> · `git status` limpo: <sim>
+- **Retomar:** `cd <worktree> && revezar <agente> <conta> <workstream>`
 
 ## Objetivo
 <uma frase>
@@ -23,4 +24,4 @@
 - <pergunta para o dono, se houver>
 
 ## Contas em espera
-- <agente/conta> volta às <HH:MM> (<fuso>)
+- <agente/conta> volta em <AAAA-MM-DD HH:MM> (<fuso>)

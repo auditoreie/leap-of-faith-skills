@@ -10,28 +10,30 @@ agente, conta ou sessão faça você perder o fio.
 
 ## Preparação (uma vez)
 
-1. **Contas no Orca:** `orca account add --agent claude` para cada conta Claude e
-   `orca account add --agent codex` para cada conta Codex (janela anônima para a segunda conta).
-   Confira com `orca account list`.
-2. **Grok e cursor-agent:** login normal de cada CLI. Para uma segunda conta, uma pasta de config
-   por conta (ver `references/agentes.md`).
-3. **ai-memory:** servidor no ar (`ai-memory status`) e hooks dos agentes instalados
+1. **Atalho:** `ln -s ~/.claude/skills/revezar-agentes/scripts/revezar.sh ~/.local/bin/revezar`.
+   `revezar status` mostra todas as contas e se estão logadas.
+2. **Contas:** uma pasta por conta, criada e logada pelo próprio atalho:
+   `revezar login claude <conta>`, `revezar login codex <conta>`, `revezar login grok <conta>`.
+   No Orca, Claude e Codex também entram pela tela de contas (`orca account add`).
+3. **ai-memory:** servidor no ar e hooks dos agentes instalados
    (`ai-memory install-hooks --agent <agente> --apply`). Confira com `ai-memory doctor`.
 4. **Registro de contas:** crie `contas/estado.md` no projeto `_global` do ai-memory a partir de
-   `templates/contas.md`, dizendo qual conta orquestra e quais trabalham.
+   `templates/contas.md`, dizendo qual conta orquestra e quais trabalham. O menu do `revezar` mostra
+   o "volta em" de cada conta a partir dele.
 5. **Piloto:** `/revezar-agentes despachar` uma tarefa trivial para cada CLI e conta numa worktree
    descartável. Só entra no revezamento quem passar.
 
 ## No dia a dia
 
-| Situação | O que você diz | O que acontece |
+| Situação | O que você faz | O que acontece |
 |---|---|---|
 | Começo do dia | `/revezar-agentes status` | contas, resets, workers ativos e o próximo movimento |
-| Tarefa grande com partes independentes | `/revezar-agentes despachar <tarefa>` | o orquestrador quebra em fichas, escolhe agente/conta/modelo pelo peso e inicia os workers no Orca |
-| Limite perto | `/revezar-agentes bastão` | grava o bastão no ai-memory antes de a conta parar |
-| Limite batido | `/revezar-agentes <agente ou conta>` | grava o bastão e devolve o comando para continuar no destino |
+| Tarefa grande com partes independentes | `/revezar-agentes despachar <tarefa>` | o orquestrador quebra em fichas, escolhe agente/conta/modelo pelo peso e inicia os workers |
+| Limite perto | `/revezar-agentes bastão` | commit de checkpoint e bastão gravados antes de a conta parar |
+| Limite batido | na pasta da tarefa: `revezar` | menu com as contas (e quando cada uma volta), escolha a linha de trabalho; o agente novo abre já lendo o bastão |
 | Quer intervir num worker | abra o terminal dele no Orca (desktop ou celular) e digite | o worker recebe direto; o orquestrador segue com a própria sessão |
 | Quer mudar a tarefa de um worker sem entrar nele | peça ao orquestrador | ele manda por `orchestration send` |
+| Trabalho pronto | o orquestrador entrega branch, diff e gate | você decide publicar; ele só faz push ou PR quando você pedir |
 
 ## Gastar pouco, sem deixar acabar
 
@@ -39,7 +41,8 @@ agente, conta ou sessão faça você perder o fio.
 - Tarefa leve vai para modelo pequeno; pesada fica com Claude maior, nunca o contrário.
 - Troque de agente entre tarefas, não no meio: cada troca paga o contexto de novo (cache frio).
 - O bastão tem no máximo 40 linhas: o agente novo não relê a conversa anterior.
-- Registre o horário de reset sempre que uma conta parar; é o que permite planejar o dia.
+- Registre quando cada conta volta, com data e hora; limite semanal dura dias.
+- Teste e build passam por `slot.sh`: no máximo 2 ao mesmo tempo na máquina, venham de onde vierem.
 
 ## Próximo nível: autonomia (ainda não ligado)
 
