@@ -12,7 +12,12 @@ set -uo pipefail
 
 slots="${REVEZAR_SLOTS:-2}"
 base="${REVEZAR_SLOTS_DIR:-$HOME/.cache/revezar/slots}"   # o mesmo dentro e fora do jail
-mkdir -p "$base"
+mkdir -p "$base" 2>/dev/null
+# Sem escrita em $base toda vaga pareceria ocupada e a espera nunca acabaria: falhe na hora.
+if ! mkdir "$base/.teste.$$" 2>/dev/null; then
+  echo "slot.sh: sem escrita em $base (Codex: --add-dir $base; jail: --jail-rw-map)" >&2; exit 3
+fi
+rmdir "$base/.teste.$$"
 mine=""
 waited=0
 

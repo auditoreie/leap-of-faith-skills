@@ -40,13 +40,14 @@ Paralelismo e controle mesmo quando os tokens acabam. Três camadas, cada uma co
 
 | Quem | Pode | Nunca |
 |---|---|---|
-| Worker | rodar isolado (`revezar --jail`); ler e escrever na própria worktree; teste e build só via `<skill>/scripts/slot.sh` | push, PR, merge, deploy; ler segredo; comando destrutivo; desligar aprovação ou sandbox (`--yolo`, `--force`, `--always-approve`, `--dangerously-*`); usar o ai-memory |
+| Worker | ler e escrever na própria worktree (isolado por `revezar --jail` quando o ai-jail estiver instalado); teste e build só via `revezar slot --` (`slot.sh`) | push, PR, merge, deploy; ler segredo; comando destrutivo; desligar aprovação ou sandbox (`--yolo`, `--force`, `--always-approve`, `--dangerously-*`); usar o ai-memory |
 | Orquestrador | gravar bastão, registro de contas e memória durável; revisar diff; integrar branches; rodar o gate final via `slot.sh` | publicar sem pedido do usuário; aceitar relatório sem conferir o diff; credencial na ficha; dirigir worker pelo terminal (use `orchestration send`) |
 | Você | entrar no terminal de qualquer worker pelo Orca e intervir; mandar publicar | — |
 
-- **Segredo:** worktree de worker nasce sem `.env` (`git worktree add` não copia ignorado). Isso não
-  basta: a sandbox dos CLIs lê fora da pasta. Worker de outro fornecedor só roda isolado
-  (`revezar --jail`: ai-jail com home privado); sem ai-jail instalado, só tarefa sem segredo por perto.
+- **Segredo:** worktree de worker nasce sem `.env`, mas a sandbox dos CLIs só limita escrita. **Sem
+  ai-jail (adiado, risco aceito pelo dono)** o worker lê tudo o que seu usuário lê: outro fornecedor
+  só pega repo nosso, sem conteúdo de terceiro não revisado (issue externa, dependência nova, web) e
+  sem dinheiro, segurança ou dado de cliente. Com ai-jail instalado, `revezar --jail` é obrigatório.
 - **Memória não é isolada:** o ai-memory local não tem login nem escopo por projeto; "worker não usa
   o ai-memory" é regra da ficha, não barreira. Até `ai-memory auth enable` (decisão do dono), dado
   sensível de cliente não vai para worker de outro fornecedor.
@@ -119,7 +120,7 @@ passo. Ninguém digita variável de ambiente. No Orca, Claude e Codex também tr
    arquivos não vão em paralelo.
 2. **Worktrees.** Uma por worker, a partir da integração: `git worktree add ../wt-<slug> -b <branch>
    origin/<integração>`. Sem `.env`, sem cópia de segredo.
-3. **Iniciar** cada worker num terminal aberto por `revezar --jail <agente> <conta> <workstream>` na
+3. **Iniciar** cada worker num terminal aberto por `revezar [--jail] <agente> <conta> <workstream>` na
    worktree dele; com Orca, `worker-start --terminal <handle>` entrega a ficha (comandos em
    `references/agentes.md`, que também diz como acompanhar e recolher relatórios sem Orca, em
    `$HOME/.cache/revezar/<slug>.json`). Inicie todos e encerre o turno; com Orca, siga a skill
@@ -134,11 +135,10 @@ passo. Ninguém digita variável de ambiente. No Orca, Claude e Codex também tr
 
 ### 6. Piloto (uma vez por CLI, conta e degrau pago)
 
-Ficha trivial numa worktree descartável, aberta com `revezar --jail`, que manda o worker tentar ler
-uma isca **fora** da worktree (`$HOME/.revezar-isca`, valor falso). Passa se: a leitura da isca foi
-negada, escreveu só na worktree, o relatório saiu no schema, `ai-memory recent` mostra a sessão no
-projeto certo e a conta usada foi a escolhida. Falhou: fora do revezamento até corrigir. Apague a
-worktree e a isca ao fim.
+Ficha trivial numa worktree descartável, aberta com `revezar`. Passa se: escreveu só na worktree,
+o relatório saiu no schema, `ai-memory recent` mostra a sessão no projeto certo e a conta é a
+escolhida. Com `--jail`, também: ler uma isca fora da worktree (`$HOME/.revezar-isca`) é negado.
+Falhou: fora do revezamento até corrigir. Apague a worktree (e a isca) ao fim.
 
 ## Output
 

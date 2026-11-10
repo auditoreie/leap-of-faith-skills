@@ -8,6 +8,7 @@
 #                                    worker: isolado no ai-jail sem credenciais montadas, sem
 #                                    instrução de bastão (o contexto vai pela ficha)
 #   revezar <agente> <conta> [linha] direto, sem menu (ex.: revezar codex default HMAXX-1-x)
+#   revezar slot -- <comando>        teste/build na vaga compartilhada (slot.sh), sem variável
 #   revezar status                   contas e estado de login
 #   revezar login <agente> <conta>   cria a pasta da conta e abre o login do CLI
 #   REVEZAR_DRY=1 revezar …          só mostra o comando, sem abrir
@@ -40,7 +41,6 @@ harness_of() {
     claude) echo claude ;;
     codex) echo codex ;;
     grok) echo grok ;;
-    cursor-agent) echo cursor ;;
     *) return 1 ;;
   esac
 }
@@ -111,18 +111,31 @@ cmd_open() {
     fi
   fi
 
+  # Linha existente faz o ai-memory retomar a sessão (codex vira `exec resume`, que recusa -C e --sandbox).
+  [ "${#nativos[@]}" -gt 0 ] && [ "$novo" = 0 ] && die "worker sem interface abre linha nova: '$ws' já existe (use outro nome, ex.: $ws-$(date +%H%M))"
+  if [ "$agente" = cursor-agent ]; then
+    # O `ai-memory run` não tem harness cursor: abre direto, sem linha de trabalho; a captura
+    # depende dos hooks (`ai-memory install-hooks --agent cursor --apply`).
+    [ "$jail" = 1 ] && die "cursor-agent não abre pelo ai-memory run, então não há --jail para ele"
+    echo "revezar: cursor-agent/default (sem linha de trabalho no ai-memory)" >&2
+    mkdir -p "$CACHE/slots"
+    if [ "${REVEZAR_DRY:-0}" = 1 ]; then printf '%q ' cursor-agent ${nativos[@]+"${nativos[@]}"}; echo; exit 0; fi
+    REVEZAR_CONTA="cursor-agent/default" exec cursor-agent ${nativos[@]+"${nativos[@]}"}
+  fi
   local h; h="$(harness_of "$agente")" || die "sem harness para $agente"
   local args=(run --env "REVEZAR_CONTA=$agente/$conta" --env "REVEZAR_SLOT=$DIR/slot.sh" --env "REVEZAR_SLOTS_DIR=$CACHE/slots")
+  mkdir -p "$CACHE/slots"   # criada aqui, fora da sandbox do worker
   if [ "$jail" = 1 ]; then
-    mkdir -p "$CACHE/slots"
     args+=(--jail=none --jail-map "$DIR" --jail-rw-map "$CACHE")
   fi
   [ -n "$env" ] && args+=(--env "$env")
   if [ "$novo" = 1 ]; then args+=(--new "$ws"); else args+=(--workstream "$ws"); fi
-  args+=("$h")
   if [ "${#nativos[@]}" -gt 0 ]; then
-    args+=("${nativos[@]}")
-  elif [ "$jail" = 0 ] && ai-memory read-page --path "bastoes/$ws.md" >/dev/null 2>&1; then
+    args+=(--no-exit-prompt "$h" "${nativos[@]}")
+  else
+    args+=("$h")
+  fi
+  if [ "${#nativos[@]}" -eq 0 ] && [ "$jail" = 0 ] && ai-memory read-page --path "bastoes/$ws.md" >/dev/null 2>&1; then
     local proj; proj="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
     args+=("Leia o bastão com: ai-memory read-page --path bastoes/$ws.md (rodado em $proj, que define workspace e projeto). Siga do 'Próximo passo exato'; não reabra as decisões do dono.")
   fi
@@ -135,6 +148,7 @@ cmd_open() {
 case "${1:-}" in
   -h|--help) sed -n '2,10p' "$SELF" | sed 's/^# \{0,1\}//' ;;
   status) cmd_status ;;
+  slot) shift; exec bash "$DIR/slot.sh" "$@" ;;
   login) shift; cmd_login "$@" ;;
   *) cmd_open "$@" ;;
 esac

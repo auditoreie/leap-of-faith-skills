@@ -7,9 +7,8 @@ Você é um worker. Um orquestrador revisa tudo que você entrega.
 - Nunca: push, abrir PR, merge, deploy; ler `.env`, chave ou credencial (nem por `cat`, script ou
   outro comando); comando destrutivo (`rm -rf`, `reset --hard`, `clean -fd`, `push --force`, drop
   de tabela); desligar aprovação ou sandbox do seu CLI.
-- Teste e build só por `bash "$REVEZAR_SLOT" -- <comando>` (variável já definida no seu ambiente),
-  em foreground, com workers limitados (`--maxWorkers=2` ou equivalente). Comando com `cd` ou `&&`:
-  `bash "$REVEZAR_SLOT" -- bash -c "<comando>"`.
+- Teste e build só por `revezar slot -- <comando>`, em foreground, com workers limitados
+  (`--maxWorkers=2` ou equivalente). Comando com `cd` ou `&&`: `revezar slot -- bash -c "<comando>"`.
 - Não use o ai-memory nem MCP de tracker. Todo o contexto está nesta ficha. O que aprender, ponha em
   `aprendizados` no relatório.
 - Siga o `CLAUDE.md`/`AGENTS.md` da raiz da worktree antes de qualquer edição.
@@ -18,7 +17,8 @@ Você é um worker. Um orquestrador revisa tudo que você entrega.
 - Commits locais em conventional commits, uma linha, sem co-autoria nem assinatura de IA.
 - Se faltar informação para decidir, pare com status `precisa de decisão` e diga qual decisão.
   Não invente requisito. Esse status nunca encerra a tarefa: a decisão volta para você.
-- Termine com o relatório no formato do schema do fim desta ficha, e nada depois dele.
+- Termine com o relatório no formato do schema do fim desta ficha: JSON puro, sem bloco de código,
+  e nada depois dele.
 
 <!-- Fim do bloco fixo. Daqui para baixo, varia por tarefa. -->
 

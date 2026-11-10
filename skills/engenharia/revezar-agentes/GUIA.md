@@ -15,7 +15,9 @@ agente, conta ou sessão faça você perder o fio.
 2. **Contas:** uma pasta por conta, criada e logada pelo próprio atalho:
    `revezar login claude <conta>`, `revezar login codex <conta>`, `revezar login grok <conta>`.
    No Orca, Claude e Codex também entram pela tela de contas (`orca account add`).
-3. **Isolamento:** `brew tap akitaonrails/tap && brew install ai-jail`. Todo worker abre com
+3. **Isolamento (adiado):** sem ai-jail, worker de outro fornecedor lê qualquer arquivo seu; por
+   isso só pega repo nosso, sem dinheiro, segurança ou dado de cliente. Quando quiser fechar isso:
+   `brew tap akitaonrails/tap && brew install ai-jail`, e todo worker passa a abrir com
    `revezar --jail`, que esconde o resto da máquina (incluindo os `.env` dos outros checkouts).
 4. **ai-memory:** servidor no ar e hooks dos agentes instalados
    (`ai-memory install-hooks --agent <agente> --apply`). Confira com `ai-memory doctor`.
@@ -44,7 +46,7 @@ agente, conta ou sessão faça você perder o fio.
 - Troque de agente entre tarefas, não no meio: cada troca paga o contexto de novo (cache frio).
 - O bastão tem no máximo 40 linhas: o agente novo não relê a conversa anterior.
 - Registre quando cada conta volta, com data e hora; limite semanal dura dias.
-- Teste e build passam por `slot.sh`: no máximo 2 ao mesmo tempo na máquina, venham de onde vierem.
+- Teste e build passam por `revezar slot --` (`slot.sh`): no máximo 2 ao mesmo tempo na máquina, venham de onde vierem.
 
 ## Próximo nível: autonomia (ainda não ligado)
 

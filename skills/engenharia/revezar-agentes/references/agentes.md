@@ -3,22 +3,29 @@
 Leia só a seção do CLI que vai usar. Flags conferidas na ajuda local de cada CLI (Claude Code,
 Codex 0.165, Grok 1.0.70, cursor-agent 2026.10, ai-memory 3.4.4, Orca). Versões novas mudam flags:
 se uma falhar, rode `<cli> --help` antes de improvisar. Itens marcados **(piloto)** não foram
-provados ponta a ponta; o passo 6 do `SKILL.md` prova.
+provados ponta a ponta; o passo 6 do `SKILL.md` prova. Piloto sem jail em 10/11/2026: Codex
+(default), Claude (auditore) e cursor-agent aprovados (conta certa, escrita só na worktree, gate por
+`revezar slot`, relatório no schema); Grok aguarda login (`revezar login grok default`).
 
 `$FICHA` = conteúdo de `templates/ficha.md` preenchida. `$WT` = caminho da worktree do worker.
 `$SCHEMA` = `templates/relatorio.schema.json`. `$REL` = `$HOME/.cache/revezar/<slug>-<AAAAMMDD-HHMM>.json`,
 um por execução (fora da worktree: não entra em commit, não colide, não se confunde com execução antiga).
 Antes do primeiro worker: `mkdir -p "$HOME/.cache/revezar"`.
 
-**Worker sem interface, sempre isolado e na conta certa** (os comandos das seções abaixo entram como
-argumentos nativos depois do `--`; o relatório só aparece como `$REL` quando o worker termina bem):
+**Worker sem interface, na conta certa** (os comandos das seções abaixo entram como argumentos
+nativos depois do `--`; o `ai-memory run` pode escrever linhas de configuração antes da resposta,
+por isso o relatório vai da primeira linha que começa com `{` até o fim, e só aparece como `$REL` quando o worker termina bem;
+com argumentos nativos o `revezar` passa `--no-exit-prompt`; `--jail` só com o ai-jail instalado, e
+então obrigatório):
 
 ```bash
-revezar --jail <agente> <conta> <workstream> -- <argumentos nativos do CLI> > "$REL.parcial" \
-  && mv "$REL.parcial" "$REL" || mv "$REL.parcial" "$REL.falhou"
+revezar [--jail] <agente> <conta> <workstream> -- <argumentos nativos do CLI> > "$REL.log" \
+  && sed -n '/^{/,$p' "$REL.log" > "$REL" || mv "$REL.log" "$REL.falhou"
 ```
 
-**(piloto)** o ai-memory repassa os argumentos nativos (`exec`, `-p`) dentro do jail.
+Worker sem interface sempre em linha de trabalho **nova** (`<TASKID>-<slug>-<HHMM>`): numa linha
+existente o ai-memory retoma a sessão anterior (o Codex vira `exec resume`, que recusa `-C`,
+`--sandbox` e `--add-dir`), e o `revezar` recusa. **(piloto)** argumentos nativos dentro do jail.
 
 ## Conta (todos)
 
@@ -32,15 +39,15 @@ abaixo e passa a certa ao agente.
 | grok | `~/.grok-<conta>` (`~/.grok` = default, ou `GROK_HOME`) **(piloto)** | `revezar login grok <conta>` |
 | cursor-agent | uma conta por máquina | `cursor-agent login` |
 
-Todo worker abre num terminal por `revezar --jail <agente> <conta> <workstream>` (conta certa,
-isolado no ai-jail). cursor-agent tem uma conta por máquina, por desenho do CLI: a troca de conta
+Todo worker abre num terminal por `revezar [--jail] <agente> <conta> <workstream>` (conta certa;
+isolado no ai-jail quando instalado). cursor-agent tem uma conta por máquina, por desenho do CLI: a troca de conta
 dele é por `cursor-agent login`.
 
 ## Orca (caminho padrão quando o Orca está no ar)
 
 | Item | Valor |
 |---|---|
-| Worker | `orca terminal create --worktree path:$WT --command "revezar --jail <agente> <conta> <workstream>" --json` e, com o handle, `orca orchestration worker-start --terminal <handle> --worktree path:$WT --spec-file <ficha> --name <slug>` **(piloto: worker em ai-jail falando com o Orca)** |
+| Worker | `orca terminal create --worktree path:$WT --command "revezar [--jail] <agente> <conta> <workstream>" --json` e, com o handle, `orca orchestration worker-start --terminal <handle> --worktree path:$WT --spec-file <ficha> --name <slug>` **(piloto)** |
 | Sessão interativa sua | Claude e Codex pela tela de contas do Orca (`orca account select`) e `orca agent launch`; não é worker, não precisa de jail |
 | Falar com worker | `orca orchestration send --to dispatch:<id> --subject "…" --body "…"`; nunca pelo terminal dele |
 | Status | `orca worktree ps`, `orca orchestration task-list`, `orca terminal list` |
@@ -66,15 +73,17 @@ reduz acertos de cache ([prompt caching](https://openrouter.ai/docs/guides/best-
   subprocesso: `cat .env` por Bash passa.
 - A sandbox dos CLIs limita escrita, não leitura: no Codex, `workspace-write` lê fora da worktree,
   inclusive o `.env` do checkout original.
-- Por isso: worktree de worker sem segredo (`git worktree add` não copia arquivo ignorado) **e**
-  worker isolado no ai-jail (`revezar --jail`; home privado, `sandbox-exec` no macOS;
+- Por isso: worktree de worker sem segredo (`git worktree add` não copia arquivo ignorado) e, quando
+  instalado, worker isolado no ai-jail (`revezar --jail`; home privado, `sandbox-exec` no macOS;
   [ai-jail](https://github.com/akitaonrails/ai-jail), GPL-3.0, "not 100% secure"). Instalar:
   `brew tap akitaonrails/tap && brew install ai-jail`.
-- O piloto prova com uma isca fora da worktree: a leitura tem que ser negada.
+- Sem ai-jail (adiado, risco aceito): o worker lê qualquer arquivo do seu usuário. Vale o limite de
+  tarefa do safe-mode do `SKILL.md`.
+- Com ai-jail, o piloto prova com uma isca fora da worktree: a leitura tem que ser negada.
 
 ## Sem Orca: acompanhar e recolher
 
-- `$REL.parcial` = em andamento; `$REL` = terminou bem; `$REL.falhou` = saiu com erro.
+- `$REL.log` sem `$REL` = em andamento; `$REL` = terminou bem; `$REL.falhou` = saiu com erro.
   `ls -t $HOME/.cache/revezar/` mostra o estado de cada execução.
 - Em andamento: `ai-memory recent` (sessões capturadas) e o terminal do próprio worker.
 - Recolher = ler o `$REL`, validar contra o schema e seguir o passo 5.4 do `SKILL.md`. Worker sem
@@ -85,8 +94,8 @@ reduz acertos de cache ([prompt caching](https://openrouter.ai/docs/guides/best-
 
 | Item | Valor |
 |---|---|
-| Argumentos nativos | `-p "$FICHA" --output-format json --model <modelo> --permission-mode acceptEdits --disallowedTools "Bash(git push:*)" "Bash(gh pr:*)"` (rodar de dentro de `$WT`) |
-| Relatório | a saída JSON do `-p` embrulha a resposta: o relatório é o texto do campo `result`. Extraia (`jq -r .result "$REL"`) e só então valide contra o schema |
+| Argumentos nativos | `-p "$FICHA" --output-format json --model <modelo> --permission-mode acceptEdits --allowedTools "Bash(revezar slot:*)" --disallowedTools "Bash(git push:*)" "Bash(gh pr:*)"` (rodar de dentro de `$WT`; sem o `--allowedTools` o `-p` nega o gate) |
+| Relatório | a saída JSON do `-p` embrulha a resposta: o relatório é o texto do campo `result`. Extraia (`jq -r '.result \| .[index("{"):rindex("}")+1]' "$REL"`: tira texto e bloco de código em volta) e só então valide contra o schema |
 | Retomar | `claude --resume <session_id>` (o `session_id` está na mesma saída JSON); `--continue` pega a sessão mais recente da pasta e pode ser outra |
 | Sinal de limite | `You've hit your … limit · resets <quando>` |
 | Nunca | `--dangerously-skip-permissions`, `--permission-mode bypassPermissions` |
@@ -98,7 +107,7 @@ resto. O Claude não tem flag de schema no `-p`; o schema vai no fim da ficha.
 
 | Item | Valor |
 |---|---|
-| Argumentos nativos | `exec -C "$WT" --sandbox workspace-write --output-schema "$SCHEMA" -m <modelo> "$FICHA"` (a mensagem final, já no schema, sai no stdout) |
+| Argumentos nativos | `exec -C "$WT" --sandbox workspace-write --add-dir "$HOME/.cache/revezar/slots" --output-schema "$SCHEMA" -m <modelo> "$FICHA"` (a mensagem final, já no schema, sai no stdout, às vezes em várias linhas; sem `--add-dir` o `slot.sh` não grava a vaga) |
 | Retomar | `codex resume <id>` (ou `--last` se só houver uma sessão na pasta) |
 | Login | `revezar status` (usa o código de saída de `codex login status`) |
 | Nunca | `--dangerously-bypass-approvals-and-sandbox`, `--sandbox danger-full-access` |
@@ -117,9 +126,11 @@ resto. O Claude não tem flag de schema no `-p`; o schema vai no fim da ficha.
 
 | Item | Valor |
 |---|---|
-| Argumentos nativos | `-p --output-format json --workspace "$WT" --sandbox enabled --model <modelo> "$FICHA"` **(piloto)** |
+| Argumentos nativos | `-p --output-format json --trust --workspace "$WT" --sandbox enabled --model <modelo> "$FICHA"` (`--trust` só confia na worktree; sem ele o `-p` para pedindo confirmação) |
+| Relatório | igual ao Claude: o JSON vem dentro de `.result`, às vezes depois de texto; mesmo `jq` |
+| ai-memory | o `ai-memory run` não tem harness cursor: o `revezar` abre o cursor-agent direto, sem linha de trabalho e sem `--jail`; captura só com `ai-memory install-hooks --agent cursor --apply` |
 | Modelos | `cursor-agent --list-models` |
-| Retomar | `cursor-agent --resume <id>`, ou `revezar cursor-agent default <workstream>` |
+| Retomar | `cursor-agent --resume <id>`, ou `revezar cursor-agent default` (sessão nova) |
 | Login | `cursor-agent status` |
 | Nunca | `--force`, `--yolo`, `--approve-mcps` |
 
