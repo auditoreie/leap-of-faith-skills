@@ -17,6 +17,7 @@ leap-of-faith-skills/
 │   ├── engenharia/               ← como o agente trabalha
 │   │   ├── desmond/                  orquestração token-efficient (acionamento explícito)
 │   │   ├── julgar-pr/                review de PR com gate de evidência e publicação única
+│   │   ├── revezar-agentes/          paralelismo e revezamento de agentes quando a cota acaba
 │   │   └── validar-skill/            gate de contribuição: segredos, estrutura, escopo
 │   ├── gestao/                   ← fluxo de trabalho e rastreabilidade
 │   │   ├── project-ledger/           ADRs versionados + tasks locais
@@ -47,6 +48,7 @@ precisam ser únicos.
 |---|---|
 | **`desmond`** | Modo de orquestração de acionamento explícito (`/desmond`): planeja antes de agir, despacha cada trabalho pro agente mais barato que dá conta e reserva o modelo de fronteira pra síntese e decisão. Para tarefa grande e multi-arquivo com o mínimo de tokens. |
 | **`julgar-pr`** | Review de PR com régua de evidência (`/julgar-pr 123 [publicar]`): roda o gate do próprio repo, passa o diff por scanner de bypass, obtém os achados pelo `/code-review`, verifica as afirmações do PR e só aceita texto que passe no `review_gate.py` (evidência obrigatória em blocker, máximo 5 nits, veredito consistente). Publica uma única review no GitHub só com `publicar`. Scripts vendorizados da the-judge (Tech Leads Club), ver `NOTICE.md`. |
+| **`revezar-agentes`** | Paralelismo e controle quando os tokens acabam (`/revezar-agentes` com `status`, `bastão`, agente/conta ou `despachar <tarefa>`): escolhe agente, conta e modelo pelo peso da tarefa, despacha workers pelo Orca com ficha de prefixo fixo e relatório em schema, passa o bastão e mantém o registro de contas e resets no ai-memory, troca de conta por menu (`revezar`), e aplica os gates (worktree sem segredo, ai-jail opcional, sem push/deploy, no máximo 2 testes por vez na máquina). Guia de uso em `GUIA.md`. |
 | **`validar-skill`** | Gate de contribuição. Audita uma skill ou o PR inteiro antes de publicar: bloqueia segredo, `.env`, chave privada, PII e dado de cliente; valida frontmatter, nome único e estrutura; reprova escopo inválido e conteúdo prejudicial. Inclui `scripts/scan.sh`. |
 
 ### gestao
