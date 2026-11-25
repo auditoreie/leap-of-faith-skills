@@ -28,7 +28,7 @@ Auditoria é **leitura**: produz achados confirmados no fonte, não uma lista de
 
 ## Fallback
 
-Pré-requisito ausente ou falho (auth expirada, binário faltando, MCP indisponível, `ecossistema.json` inexistente, script com erro) **não encerra a skill**: diga em uma linha o que faltou e como resolver (`! gcloud auth login`, `/onboarding-ecossistema`, instalar a ferramenta), ofereça seguir sem essa parte e, com a aprovação do usuário, prossiga marcando no Output o que ficou **não verificado**. O que não muda: escrita externa (ClickUp, GCP, `git push`, banco) continua exigindo confirmação, e "não verificado" nunca vira "ok".
+`rg` ou `madge` ausente, ou `scan.sh` com erro: diga o que faltou, siga com o que dá e marque no Output o que ficou **não verificado** (nunca "nenhum achado").
 
 ## Passos
 

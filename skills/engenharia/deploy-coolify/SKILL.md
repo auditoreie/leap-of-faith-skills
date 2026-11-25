@@ -43,7 +43,7 @@ A imagem precisa existir antes de o Coolify conseguir puxá-la. Não inverta.
 
 ### 1. Levar os artefatos para o projeto
 
-Copie do `movicar-api` (referência de implementação) e ajuste nomes:
+Copie do repositório de referência (o serviço do time que já roda no Coolify; pergunte qual se não souber) e ajuste nomes:
 
 - `Dockerfile` — multi-stage: compila na imagem, runtime só sobe o compilado
 - `.github/workflows/deploy.yml` — build ARM, smoke test como portão, publicação, webhook

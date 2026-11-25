@@ -19,7 +19,7 @@ O modelo lembra a API de ontem; o repo roda a versão de hoje. Antes de afirmar 
 ## Safe-mode
 
 - Só leitura; nenhuma alteração no repo além de anotar um ID novo nesta tabela, e só quando pedido.
-- Cota esgotada ("quota exceeded") → avise, sugira `npx ctx7@latest login` para limite maior, e só então responda de memória, **dizendo que é de memória e pode estar defasado**. Nunca caia para a memória em silêncio.
+- Cota esgotada ("quota exceeded") ou `ctx7` indisponível → avise, sugira `npx ctx7@latest login` para limite maior, e só então responda de memória, **dizendo que é de memória e pode estar defasado**. Nunca caia para a memória em silêncio.
 - Resposta da doc que contradiz o código do repo: mostre os dois; o código em produção é fato, a doc é referência.
 
 ## IDs pré-resolvidos (verificados em 2026-09-15 com `npx ctx7@latest library`)
@@ -36,10 +36,6 @@ O modelo lembra a API de ontem; o repo roda a versão de hoje. Antes de afirmar 
 | Bun | `/oven-sh/bun` | score 83; versões `bun-v1.4.x` |
 | Playwright | `/microsoft/playwright` | score 86; versões `v1.51.0`, `v1.58.2`, `v1.61.0` |
 | outra lib | **resolver e anotar aqui** | `npx ctx7@latest library "<lib>" "<pergunta>"` |
-
-## Fallback
-
-Pré-requisito ausente ou falho (auth expirada, binário faltando, MCP indisponível, `ecossistema.json` inexistente, script com erro) **não encerra a skill**: diga em uma linha o que faltou e como resolver (`! gcloud auth login`, `/onboarding-ecossistema`, instalar a ferramenta), ofereça seguir sem essa parte e, com a aprovação do usuário, prossiga marcando no Output o que ficou **não verificado**. O que não muda: escrita externa (ClickUp, GCP, `git push`, banco) continua exigindo confirmação, e "não verificado" nunca vira "ok".
 
 ## Passos
 

@@ -24,11 +24,11 @@ No MongoDB o Prisma **não tem Migrate**: `prisma db push` sincroniza schema e �
 - Backfill sempre nasce com `DRY_RUN` ligado por padrão: imprime contagens e amostra, não escreve. Modo real é opt-in por variável.
 - Um PR não remove o campo antigo que ele mesmo deixa de escrever. Contract é PR separado, depois de dias sem leitura do campo (`rg` confirma).
 - Nunca edita client gerado. Nunca mistura backfill com mudança de comportamento no mesmo script. Nunca "corrige na mão" no Compass/Atlas: dado corrigido fora de script não tem rastro nem reprodução.
-- Toggle default-OFF para dual-write e para leitura do campo novo. Classe de risco `schema` no PR: 2 aprovações e seção Rollout preenchida.
+- Toggle default-OFF para dual-write e para leitura do campo novo. Classe de risco `schema` no PR, com a seção Rollout preenchida.
 
 ## Fallback
 
-Pré-requisito ausente ou falho (auth expirada, binário faltando, MCP indisponível, `ecossistema.json` inexistente, script com erro) **não encerra a skill**: diga em uma linha o que faltou e como resolver (`! gcloud auth login`, `/onboarding-ecossistema`, instalar a ferramenta), ofereça seguir sem essa parte e, com a aprovação do usuário, prossiga marcando no Output o que ficou **não verificado**. O que não muda: escrita externa (ClickUp, GCP, `git push`, banco) continua exigindo confirmação, e "não verificado" nunca vira "ok".
+`diff-schema.sh` com erro ou sem acesso ao banco para contar: siga com a leitura do diff e marque no Output "documentos afetados: não contado ainda". Escrita em banco continua exigindo confirmação.
 
 ## Passos
 

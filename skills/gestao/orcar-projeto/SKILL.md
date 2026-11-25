@@ -23,7 +23,7 @@ base e opcionais, preço com prêmio de risco e comparação tributária. A regr
 orçamento sem confiar na gente.
 
 **Alvo:** `$ARGUMENTS` — pasta com os insumos (`docs/`) e, se houver, URL do sistema atual.
-Exemplo: `/orcar-projeto docs/ https://www.exemplo.com.br`.
+Exemplo: `/orcar-projeto docs/ https://www.exemplo.com.br`. `<skill-dir>` é a pasta desta `SKILL.md`.
 
 ## Token discipline
 
@@ -55,8 +55,8 @@ Exemplo: `/orcar-projeto docs/ https://www.exemplo.com.br`.
    conteúdo, mídia), o que o cliente já tem contratado, quem são as outras partes (agência,
    departamento interno), entidade que fatura, custo interno por hora e margem-alvo. "Não sei"
    vira item de "dados que faltam" com dono.
-3. **Medir o sistema real** (se existe um). `scripts/crawl.py --site <url>` → `data/raw/pages.jsonl`;
-   `scripts/lighthouse.sh <lista>` + `scripts/lighthouse_resumo.py` → tabela. Conte objetos
+3. **Medir o sistema real** (se existe um). `python3 <skill-dir>/scripts/crawl.py --site <url>` → `data/raw/pages.jsonl`;
+   `bash <skill-dir>/scripts/lighthouse.sh <lista>` + `python3 <skill-dir>/scripts/lighthouse_resumo.py` → tabela. Conte objetos
    publicados por API pública quando houver (WordPress: cabeçalho `X-WP-Total` de
    `/wp-json/wp/v2/<tipo>`). Compare com o inventário do cliente em `data/inventario-vs-caderno.md`:
    divergência é lacuna, e lacuna é onde a proposta mostra expertise.

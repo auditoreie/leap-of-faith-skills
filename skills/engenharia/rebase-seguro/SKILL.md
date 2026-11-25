@@ -26,10 +26,6 @@ Executa o rebase pedido preservando o comportamento pretendido dos dois lados e 
 - Publicação só com autorização explícita e sempre `--force-with-lease`; lease falhou → inspecione os commits novos do remoto, nunca troque por `--force`. Recuperação que descarta trabalho exige nova permissão.
 - Nunca adiciona comentário de "resolvido conflito" em código de produção. Nunca roda a suíte inteira a cada arquivo resolvido.
 
-## Fallback
-
-Pré-requisito ausente ou falho (auth expirada, binário faltando, MCP indisponível, `ecossistema.json` inexistente, script com erro) **não encerra a skill**: diga em uma linha o que faltou e como resolver (`! gcloud auth login`, `/onboarding-ecossistema`, instalar a ferramenta), ofereça seguir sem essa parte e, com a aprovação do usuário, prossiga marcando no Output o que ficou **não verificado**. O que não muda: escrita externa (ClickUp, GCP, `git push`, banco) continua exigindo confirmação, e "não verificado" nunca vira "ok".
-
 ## Passos
 
 1. **Inspecionar.** Branch atual, alvo, sujeira, rebase em andamento, `git fetch origin` recente. Conte os commits a reaplicar: `git rev-list --count <alvo>..HEAD`. Se há rebase em andamento e o usuário não disse "continuar", pergunte se retoma ou aborta (`git rebase --abort` volta ao estado anterior; ainda assim, confirme).

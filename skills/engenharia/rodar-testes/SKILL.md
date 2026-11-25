@@ -28,7 +28,7 @@ Testes que podem expor a falha da mudança, na camada mais baixa que a observa, 
 
 ## Fallback
 
-Pré-requisito ausente ou falho (auth expirada, binário faltando, MCP indisponível, `ecossistema.json` inexistente, script com erro) **não encerra a skill**: diga em uma linha o que faltou e como resolver (`! gcloud auth login`, `/onboarding-ecossistema`, instalar a ferramenta), ofereça seguir sem essa parte e, com a aprovação do usuário, prossiga marcando no Output o que ficou **não verificado**. O que não muda: escrita externa (ClickUp, GCP, `git push`, banco) continua exigindo confirmação, e "não verificado" nunca vira "ok".
+Runner ausente ou `detectar-testes.sh` com erro: diga o que faltou e liste a suíte em "Não rodado" com o motivo. "Não rodado" nunca vira "passou".
 
 ## Passos
 

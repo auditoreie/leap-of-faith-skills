@@ -7,7 +7,7 @@
 #   revezar --jail <ag> <conta> <ws> [-- args nativos]
 #                                    worker: isolado no ai-jail sem credenciais montadas, sem
 #                                    instrução de bastão (o contexto vai pela ficha)
-#   revezar <agente> <conta> [linha] direto, sem menu (ex.: revezar codex default HMAXX-1-x)
+#   revezar <agente> <conta> [linha] direto, sem menu (ex.: revezar codex default PROJ-1-x)
 #   revezar slot -- <comando>        teste/build na vaga compartilhada (slot.sh), sem variável
 #   revezar status                   contas e estado de login
 #   revezar login <agente> <conta>   cria a pasta da conta e abre o login do CLI

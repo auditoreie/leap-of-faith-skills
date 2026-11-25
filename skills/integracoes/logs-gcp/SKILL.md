@@ -28,7 +28,7 @@ Responde "o que o serviço fez, quando, em qual revisão" com evidência do GCP,
 
 ## Fallback
 
-Pré-requisito ausente ou falho (auth expirada, binário faltando, MCP indisponível, `ecossistema.json` inexistente, script com erro) **não encerra a skill**: diga em uma linha o que faltou e como resolver (`! gcloud auth login`, `/onboarding-ecossistema`, instalar a ferramenta), ofereça seguir sem essa parte e, com a aprovação do usuário, prossiga marcando no Output o que ficou **não verificado**. O que não muda: escrita externa (ClickUp, GCP, `git push`, banco) continua exigindo confirmação, e "não verificado" nunca vira "ok".
+Sem mapa do ecossistema, derive o serviço do repo (Token discipline). Consulta que falhou entra no Output como **não verificado**, nunca como "sem erro".
 
 ## Passos
 
