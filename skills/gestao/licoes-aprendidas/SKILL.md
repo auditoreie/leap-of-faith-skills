@@ -1,6 +1,6 @@
 ---
 name: licoes-aprendidas
-description: Extrai de uma task, branch ou PR recém-concluído a lição de engenharia que o próprio código demonstra — lê commits, diff, corpo do PR e a task do ClickUp, identifica o padrão dominante (decisão estrutural, trade-off, problema resolvido, oportunidade perdida) e devolve uma lição concreta, com arquivo e linha, pronta para virar comentário na task, seção "Notes for the ADR" ou entrada de retro. Use quando o usuário disser "o que aprendemos com isso", "lição dessa task", "retro dessa branch", "qual o takeaway", "/licoes-aprendidas [branch|PR|N commits]", "what did we learn". NÃO use para revisar código em busca de bugs (isso é /review e /code-review) nem para fechar a task (isso é /fechar-task ou o fluxo do ClickUp).
+description: Extrai de uma task, branch ou PR recém-concluído a lição de engenharia que o próprio código demonstra — lê commits, diff, corpo do PR e a task do ClickUp, identifica o padrão dominante (decisão estrutural, trade-off, problema resolvido, oportunidade perdida) e devolve uma lição concreta, com arquivo e linha, pronta para virar comentário na task, seção "Notes for the ADR" ou entrada de retro. Use quando o usuário disser "o que aprendemos com isso", "lição dessa task", "retro dessa branch", "qual o takeaway", "/licoes-aprendidas [branch|PR|N commits]", "what did we learn". NÃO use para revisar código em busca de bugs (isso é /review e /code-review) nem para comentar ou fechar a task no ClickUp (isso é feito direto na task).
 ---
 
 # licoes-aprendidas
@@ -23,7 +23,7 @@ Um espelho, não uma palestra: mostra o que o código já demonstra. Uma lição
 
 ## Fallback
 
-Pré-requisito ausente ou falho (auth expirada, binário faltando, MCP indisponível, `ecossistema.json` inexistente, script com erro) **não encerra a skill**: diga em uma linha o que faltou e como resolver (`! gcloud auth login`, `/onboarding-ecossistema`, instalar a ferramenta), ofereça seguir sem essa parte e, com a aprovação do usuário, prossiga marcando no Output o que ficou **não verificado**. O que não muda: escrita externa (ClickUp, GCP, `git push`, banco) continua exigindo confirmação, e "não verificado" nunca vira "ok".
+`gh` ou MCP do ClickUp indisponível: siga só com git e marque a intenção (PR/task) como **não verificada**.
 
 ## Passos
 

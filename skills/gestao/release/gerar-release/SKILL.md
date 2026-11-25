@@ -1,6 +1,6 @@
 ---
 name: gerar-release
-description: Gera ou preenche o PR de release entre duas branches com changelog preciso — lista os PRs mergeados (inclusive empilhados, squash e rebase, que não têm merge commit próprio), cruza cada um com a task do ClickUp (descrição e comentários de ambos), e valida no diff quais feature toggles a release introduz, remove ou exige ligar, porque a declaração dos devs nem sempre bate com o código. Use quando o usuário disser "gerar release", "PR de release", "/gerar-release staging main", "release notes", "o que vai nessa release", "changelog da release", "o que está indo pra produção", ou mandar a URL/número de um PR de release já aberto pedindo para "preencher esse PR" (modo preencher: escreve título e corpo direto no PR, sem confirmação). NÃO use para editar o changelog público de um PR isolado (isso se faz no próprio PR) nem para fechar ou reportar uma task (isso é /fechar-task e /reportar-task).
+description: Gera ou preenche o PR de release entre duas branches com changelog preciso — lista os PRs mergeados (inclusive empilhados, squash e rebase, que não têm merge commit próprio), cruza cada um com a task do ClickUp (descrição e comentários de ambos), e valida no diff quais feature toggles a release introduz, remove ou exige ligar, porque a declaração dos devs nem sempre bate com o código. Use quando o usuário disser "gerar release", "PR de release", "/gerar-release staging main", "release notes", "o que vai nessa release", "changelog da release", "o que está indo pra produção", ou mandar a URL/número de um PR de release já aberto pedindo para "preencher esse PR" (modo preencher: escreve título e corpo direto no PR, sem confirmação). NÃO use para editar o changelog público de um PR isolado (isso se faz no próprio PR) nem para comentar ou mudar status de task no ClickUp (esta skill só lê o ClickUp).
 ---
 
 # gerar-release
@@ -14,6 +14,7 @@ Monta o **PR de release** de `<head>` para `<base>`: o que muda, o changelog e a
 
 ## Token discipline
 
+- `<skill-dir>` é a pasta desta `SKILL.md`; os scripts rodam com o cwd no repo da release.
 - **Scripts antes de leitura.** `scripts/prs-entre-branches.sh` e `scripts/scan-toggles.sh` fazem a varredura; não leia diff nem log à mão.
 - **ClickUp: `clickup_get_task` sem `include`** — o default já é resumo (campos grandes vêm como contagem). Só passe `include: ['description']` se o PR tiver corpo vazio ou não explicar o que mudou. `clickup_get_task_comments` devolve todos os comentários sem paginar; o filtro do que importa é de leitura (passo 4), não de API. Não peça `custom_fields`, `attachments` nem `subtasks`.
 - **PR:** `gh pr view N --json title,body,headRefName,comments,mergedAt` — não abra o diff do PR; o `scan-toggles.sh` já cobre o que importa dele. Exceção: quando um PR afirma "removi o toggle X" ou "nenhuma tela muda", confira o ponto exato com `git diff <base>...<head> -- <arquivo> | grep`, não lendo o arquivo.
@@ -33,13 +34,13 @@ Monta o **PR de release** de `<head>` para `<base>`: o que muda, o changelog e a
 
 1. **Refs e escopo.**
    ```bash
-   bash scripts/prs-entre-branches.sh <base> <head>
+   bash <skill-dir>/scripts/prs-entre-branches.sh <base> <head>
    ```
    Saída: números de PR mergeados em `<head>` e ausentes em `<base>`, mais commits diretos sem PR (ex.: hotfix). O script une três fontes: merge commits, `gh pr list` casado por SHA (pega **PR empilhado**, que não tem merge commit próprio, e squash) e a API commit→PR (rebase). A seção **"PRs sem merge commit próprio"** vai como nota na tabela de PRs — é o PR que o revisor não vê no `git log --merges`. O script imprime cabeçalhos mesmo sem itens; o critério de parada é o **contador**, não a saída vazia: com `prs=0 commits_diretos=0` no resumo, pare: "nada a liberar entre `<head>` e `<base>`". Se o script avisar que `gh` não estava autenticado, confira `git log --oneline <base>..<head>` contra a lista antes de seguir.
 
 2. **Toggles no código — antes de ler qualquer PR**, para não ser influenciado pelo que o dev declarou:
    ```bash
-   bash scripts/scan-toggles.sh <base> <head>
+   bash <skill-dir>/scripts/scan-toggles.sh <base> <head>
    ```
    Guarde a lista: env vars novas e **removidas**, padrões `xEnabled`/`=== 'true'`/`!== 'false'`, mudanças em `.env*` versionados, campos novos de config por tenant no schema. Cobre monorepo (`apps/*/src`). `!== 'false'` é default **ligado** (kill-switch); `=== 'true'` é default desligado. Leitura **removida** (`-`) é toggle removido: entra na tabela como "removido", com o que passa a valer sempre. Cada item vira uma linha na seção de toggles, **mesmo que nenhum PR o mencione**.
 

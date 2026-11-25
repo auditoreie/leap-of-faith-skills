@@ -89,23 +89,12 @@ git) em qualquer projeto.
 
 Detalhe em `skills/gestao/project-ledger/SKILL.md` (+ `conventions.md`, lazy-load).
 
-#### Fluxo Plane (`skills/gestao/plane/`)
+#### Fluxo ClickUp
 
-Ciclo de task no Plane. Cada dev usa a **própria** API key, lida de `~/.claude/plane_config.json` —
-nunca hardcoded, nunca compartilhada. Workspace e Project ID são resolvidos em runtime (o projeto sai
-do prefixo do task ID), então as skills funcionam em qualquer workspace do Plane.
-
-| Comando | O que faz |
-|---|---|
-| `/plane-onboarding` | Primeiro setup: coleta workspace + API key pessoal, grava a config com `chmod 600`, conecta o MCP e explica o fluxo |
-| `/iniciar-task PROJ-25` | Move pra In Progress, inicia o cronômetro, lê objetivo e definition of done, começa a executar |
-| `/reportar-task PROJ-25 --pr <url>` | Comenta na task; opcionalmente `--time <min>` pro worklog e `--cost`/`--tokens` pros campos de custo. **Não fecha** |
-| `/fechar-task PROJ-25` | Encerra: worklog, tokens, custo e comentário de resumo |
-
-Fronteira: `iniciar` (começa) → `reportar` (meio, sem fechar) → `fechar` (encerra).
-
-O custo de IA sai do `ccusage` (`npx ccusage@latest`), nunca de taxa fixa por token — a tarifa varia
-por modelo e por input/output/cache.
+`/onboarding-ecossistema` uma vez por cliente (grava `<raiz>/.claude/ecossistema.json`, fora deste
+repositório) → `/criar-task <demanda>` por demanda → `/gerar-release <base> <head>` na release.
+`/licoes-aprendidas` fecha o ciclo com a lição da branch ou do PR. Cada skill tem o detalhe no
+próprio `SKILL.md`.
 
 ### integracoes
 

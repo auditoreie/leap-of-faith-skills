@@ -39,7 +39,7 @@ skills/
 
 Tema novo é permitido — crie a pasta e justifique no PR. O `install.sh` recursa em
 `skills/**/SKILL.md` em qualquer profundidade, e o nome instalado é o **basename da pasta da skill**
-(`skills/gestao/plane/fechar-task/` instala como `fechar-task`). Nomes precisam ser únicos no repo.
+(`skills/gestao/release/gerar-release/` instala como `gerar-release`). Nomes precisam ser únicos no repo.
 
 ## Anatomia da SKILL.md
 
@@ -83,13 +83,13 @@ uma skill que nunca dispara — ou que dispara na hora errada. Ela precisa de tr
 
 ```yaml
 # ruim — não diz quando, não tem gatilho, não tem fronteira
-description: Ajuda com tasks do Plane.
+description: Ajuda com rebase.
 
 # bom
-description: Fecha uma task no Plane — grava tempo (worklog), tokens, custo de IA e um comentário
-  de resumo, encerrando o ciclo. Use quando o usuário disser "fechar task", "encerrar a task X",
-  "/fechar-task PROJ-25", "close task". NÃO use para só comentar/reportar sem encerrar (isso é
-  /reportar-task) nem para iniciar (isso é /iniciar-task).
+description: Rebaseia uma branch sobre a integração preservando o trabalho dos dois lados — cria
+  backup ref, pede confirmação e resolve conflitos lendo os dois lados. Use quando o usuário disser
+  "rebase", "atualiza minha branch com a dev", "/rebase-seguro [alvo]". NÃO use para merge,
+  cherry-pick nem para abrir PR de release (isso é /gerar-release).
 ```
 
 Escreva a `description` em **terceira pessoa, descrevendo a skill** — não em imperativo pro modelo.
@@ -135,8 +135,8 @@ modelo não se distrair.
   o `python3 -c` que extrai o campo é executável.
 - **Diga o que fazer quando der errado.** Todo passo que pode retornar vazio precisa da linha "se
   vier vazio, pare e mostre X — não chute".
-- **Documente a pegadinha junto do passo.** O aviso de que o Plane fica atrás do Cloudflare vale mais
-  ao lado do `curl` do que numa seção "Notas" no fim.
+- **Documente a pegadinha junto do passo.** O aviso de que o webhook do Coolify é POST-only vale mais
+  ao lado do comando do que numa seção "Notas" no fim.
 - **Use tabela pra decisão, lista pra sequência.** Se o leitor precisa escolher, tabela; se precisa
   executar em ordem, lista numerada.
 - **Mostre o output esperado.** Um bloco com o formato exato do resumo final elimina variação entre

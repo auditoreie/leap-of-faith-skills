@@ -78,8 +78,8 @@ Pergunte: *se essa skill rodar sozinha no repositório de alguém, o que de pior
 🔎 validar-skill — skills/gestao/nova-skill (4 arquivos)
 
 ⛔ BLOQUEIOS (2)
-  - skills/gestao/nova-skill/SKILL.md:31 — chave da API Plane (começa com 'plan…')
-    → revogue a chave, leia de ~/.claude/plane_config.json
+  - skills/gestao/nova-skill/SKILL.md:31 — token do GitHub (começa com 'ghp_…')
+    → revogue o token, leia de variável de ambiente ou config local fora do repo
   - skills/gestao/nova-skill/.env — arquivo proibido
     → remova do índice (git rm --cached) e adicione ao .gitignore
 
