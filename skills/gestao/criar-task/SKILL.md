@@ -59,7 +59,7 @@ Escrita externa continua exigindo confirmação. "Não verificado" nunca vira "o
 
 3. **Pré-triagem no código e no board.**
    ```bash
-   TASK_PREFIX=<prefixo> bash <skill-dir>/scripts/pre-triagem.sh <RAIZ>/<repo> "<kw negócio>" "<kw técnica>" ["<kw3>"]
+   TASK_PREFIX=<prefixo> INTEGRATION_BRANCH=<integração do repo na config> bash <skill-dir>/scripts/pre-triagem.sh <RAIZ>/<repo> "<kw negócio>" "<kw técnica>" ["<kw3>"]
    ```
    Em paralelo, `clickup_search` (`references/clickup.md`, "Buscar duplicata") pelas mesmas palavras no folder da config, status `unstarted`/`active`.
    - Tudo zerado → registre "sem PR/task/branch relacionada em <data>" e siga.

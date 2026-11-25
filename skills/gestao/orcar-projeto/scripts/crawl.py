@@ -105,9 +105,16 @@ def http_get(url, tentativas=2):
 # ---------- robots.txt ----------
 
 def carregar_robots():
+    """Regras do robots.txt para o UA (RFC 9309): grupos do produto, senão os de '*'.
+    robots inacessível (rede ou 5xx) = proibição total: aborta a coleta. 4xx = sem regras."""
     status, _, body = http_get(ROBOTS)
-    regras = []  # (tipo, regex, tamanho)
-    grupo_star = False
+    if status == 0 or status >= 500:
+        sys.exit(f"robots.txt inacessível ({status or 'erro de rede'}): coleta abortada (RFC 9309, 2.3.1.4). Tente depois.")
+    if status >= 400:
+        return []
+    produto = UA.split("/", 1)[0].lower()
+    grupos = []  # (agentes, regras)
+    em_agentes = False
     for linha in body.decode("utf-8", "replace").splitlines():
         linha = linha.split("#", 1)[0].strip()
         if ":" not in linha:
@@ -115,11 +122,19 @@ def carregar_robots():
         k, v = (p.strip() for p in linha.split(":", 1))
         k = k.lower()
         if k == "user-agent":
-            grupo_star = v == "*"
-        elif k in ("allow", "disallow") and grupo_star and v:
-            rx = "^" + re.escape(v).replace(r"\*", ".*").replace(r"\$", "$")
-            regras.append((k, re.compile(rx), len(v)))
-    return regras
+            if not em_agentes:
+                grupos.append((set(), []))
+            grupos[-1][0].add(v.lower())
+            em_agentes = True
+        elif k in ("allow", "disallow"):
+            em_agentes = False
+            if grupos and v:
+                rx = "^" + re.escape(v).replace(r"\*", ".*").replace(r"\$", "$")
+                grupos[-1][1].append((k, re.compile(rx), len(v)))
+    proprios = [r for ags, rs in grupos if produto in ags for r in rs]
+    if any(produto in ags for ags, _ in grupos):
+        return proprios
+    return [r for ags, rs in grupos if "*" in ags for r in rs]
 
 
 def permitido(regras, url):
@@ -363,7 +378,7 @@ def main():
     sitemap = ler_sitemaps()
     print(f"sitemaps: {len(sitemap)} URLs", flush=True)
 
-    fila = list(sitemap) + [SITE + "/"]
+    fila = [u for u in list(sitemap) + [SITE + "/"] if rastreavel(regras, u)]
     vistos = set(fila)
     for r in feitos.values():  # reenfileira links de páginas já cacheadas
         for l in r.get("links_internos", []) + ([r["redirect_para"]] if r.get("redirect_para") else []):

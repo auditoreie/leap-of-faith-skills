@@ -13,8 +13,9 @@ O script:
 - cria um symlink por skill, nomeado pelo **basename da pasta** da skill;
 - não sobrescreve symlink divergente nem cópia local sem confirmação.
 
-Atualizar depois é `git pull` em `~/leap-of-faith-skills/`. Como são symlinks, o pull já vale pra
-todos os projetos — não precisa reinstalar.
+Atualizar depois é `git pull` em `~/leap-of-faith-skills/`: como são symlinks, o pull já vale pra
+todos os projetos. Quando o pull **adiciona, remove ou renomeia** skill, rode `install.sh` de novo:
+ele cria os links novos e oferece remover os que ficaram quebrados.
 
 ## Como o Claude Code descobre as skills
 

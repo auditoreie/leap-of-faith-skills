@@ -42,7 +42,7 @@ Monta o **PR de release** de `<head>` para `<base>`: o que muda, o changelog e a
    ```bash
    bash <skill-dir>/scripts/scan-toggles.sh <base> <head>
    ```
-   Guarde a lista: env vars novas e **removidas**, padrões `xEnabled`/`=== 'true'`/`!== 'false'`, mudanças em `.env*` versionados, campos novos de config por tenant no schema. Cobre monorepo (`apps/*/src`). `!== 'false'` é default **ligado** (kill-switch); `=== 'true'` é default desligado. Leitura **removida** (`-`) é toggle removido: entra na tabela como "removido", com o que passa a valer sempre. Cada item vira uma linha na seção de toggles, **mesmo que nenhum PR o mencione**.
+   Guarde a lista: env vars novas e **removidas**, padrões `xEnabled`/`=== 'true'`/`!== 'false'`, mudanças em `.env*` versionados, campos novos de config por tenant no schema. Cobre monorepo (`apps/*/src`). `!== 'false'` é default **ligado** (kill-switch); `=== 'true'` é default desligado. Leitura **removida** (`-`) só é toggle removido se `git grep -n '<VAR>' <head> -- <pastas do scan>` não achar mais leitura (linha só reescrita é alteração, não remoção): entra na tabela como "removido", com o que passa a valer sempre. Cada item vira uma linha na seção de toggles, **mesmo que nenhum PR o mencione**.
 
 3. **Por PR:** `gh pr view N --json title,body,headRefName,comments,mergedAt`. Extraia:
    - IDs de task no título, branch e corpo: regex `[A-Z]{2,6}-[0-9]{2,5}` (ex.: `PROJ-4281`).

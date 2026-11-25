@@ -92,7 +92,7 @@ case "$sub" in
 import sys, json
 d = json.load(sys.stdin)
 if "error" in d:
-    e = d["error"]; print(f"  NÃO VERIFICADO — {e.get(\"code\")}: {str(e.get(\"message\"))[:160]}"); sys.exit(0)
+    e = d["error"]; print("  NÃO VERIFICADO — %s: %s" % (e.get("code"), str(e.get("message"))[:160])); sys.exit(0)
 gs = d.get("errorGroupStats", [])
 if not gs: print("  nenhum grupo de erro no período"); sys.exit(0)
 for g in gs:

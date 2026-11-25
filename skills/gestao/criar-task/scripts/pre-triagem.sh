@@ -18,7 +18,7 @@ if [[ $# -lt 2 ]]; then
 fi
 
 repo="$1"; shift
-[[ -d "$repo/.git" ]] || { echo "não é um repo git: $repo" >&2; exit 3; }
+git -C "$repo" rev-parse --show-toplevel >/dev/null 2>&1 || { echo "não é um repo git: $repo" >&2; exit 3; }
 cd "$repo" || exit 3
 
 # regex OR das palavras-chave, com metacaracteres ERE escapados

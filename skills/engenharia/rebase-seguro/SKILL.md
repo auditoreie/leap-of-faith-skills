@@ -28,7 +28,7 @@ Executa o rebase pedido preservando o comportamento pretendido dos dois lados e 
 
 ## Passos
 
-1. **Inspecionar.** Branch atual, alvo, sujeira, rebase em andamento, `git fetch origin` recente. Conte os commits a reaplicar: `git rev-list --count <alvo>..HEAD`. Se há rebase em andamento e o usuário não disse "continuar", pergunte se retoma ou aborta (`git rebase --abort` volta ao estado anterior; ainda assim, confirme).
+1. **Inspecionar.** Branch atual, alvo, sujeira, rebase em andamento, `git fetch origin` recente. Conte os commits a reaplicar: `git rev-list --count <alvo>..HEAD`. Se há rebase em andamento e o usuário não disse "continuar", pergunte se retoma ou aborta (`git rebase --abort` volta ao estado anterior; ainda assim, confirme). Retomar pula os passos 2 e 3 (o backup já existe e o HEAD está destacado) e vai direto ao passo 4. Série com merge commit (`git rev-list --merges --count <alvo>..HEAD` > 0): o rebase comum descarta os merges e o que foi resolvido neles; diga isso na confirmação e pergunte se usa `--rebase-merges`.
 
 2. **Backup.**
    ```bash

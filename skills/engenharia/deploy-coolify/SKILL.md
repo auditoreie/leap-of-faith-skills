@@ -90,7 +90,7 @@ Copie a **Deploy Webhook URL** da aplicação e crie um token em **Keys & Tokens
 ```sh
 gh secret set COOLIFY_WEBHOOK_STAGING --body '<url>'
 gh secret set COOLIFY_WEBHOOK_PRODUCTION --body '<url>'
-gh secret set COOLIFY_TOKEN --body '<token>'
+gh secret set COOLIFY_TOKEN   # sem --body: o gh pede o valor, que não fica no histórico do shell
 ```
 
 > **O webhook é POST.** Desde o Coolify v4.2, endpoints que mudam estado são POST-only e GET

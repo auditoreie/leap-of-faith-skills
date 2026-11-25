@@ -84,7 +84,7 @@ precisam ser únicos.
 
 Fluxo ClickUp: `onboarding-ecossistema` (uma vez por cliente) → `criar-task` (por demanda). IDs de workspace, lista e
 campos, repos e mapa GCP ficam em `<raiz>/.claude/ecossistema.json` e `ecossistema/*.md`, nunca neste repositório —
-`validar-skill` bloqueia esses arquivos no commit.
+`validar-skill` bloqueia `ecossistema.json` e `gcp-servicos.md` no commit (o `produtos.md` não tem nome fixo: confira à mão).
 
 ### integracoes
 

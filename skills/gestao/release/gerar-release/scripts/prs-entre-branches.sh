@@ -86,8 +86,7 @@ fi
 
 # ---- C: commits first-parent sem PR conhecido -> API de commits ---------------
 prs_c=""; diretos=""; lookups=0; truncado=0
-cand=$(git log --no-merges --first-parent --format='%H %ad %s' --date=short "$RANGE" \
-  | grep -vE '\[skip ci\]' || true)
+cand=$(git log --no-merges --first-parent --format='%H %ad %s' --date=short "$RANGE" || true)
 while read -r sha rest; do
   [ -z "$sha" ] && continue
   # squash commit ou head de PR fast-forwarded: ja e de um PR visto em B

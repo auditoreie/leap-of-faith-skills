@@ -20,14 +20,14 @@ Loaded on demand by `SKILL.md` only when running `init`.
    - `.github/workflows/` ls (or `.circleci/`, `.gitlab-ci.yml`).
    - Stack-specific config (only if obviously present): `astro.config.*`, `next.config.*`, `vite.config.*`, `drizzle.config.*`, `tsconfig.json` (just check `strict`).
 5. **Run smell tests** on what was already read — no extra reads. See "Smell tests" below.
-6. **Generate `docs/adr/0001-baseline.md`** from `templates/adr-0001-baseline.md`. Fill the sections honestly:
+6. **If `docs/adr/0001-baseline.md` already exists, do not regenerate it** (ADRs are append-only): skip to the final output and propose a new ADR for what changed. Otherwise **generate `docs/adr/0001-baseline.md`** from `templates/adr-0001-baseline.md`. Fill the sections honestly:
    - Project purpose — from README.
    - Stack — concrete versions, not generic labels.
    - Top-level layout.
    - **Capabilities** — what the surface shows the repo can do. Conservative.
    - **Implicit decisions worth ratifying** — choices visible in config that aren't written down (deploy target, ORM, SSR mode, multi-locale). Each gets a "proposed follow-up ADR" line.
    - **Detected gaps / opportunities** — from smell tests. Each maps to a candidate task slug.
-7. Update `docs/adr/README.md` index with `- [0001 Baseline](0001-baseline.md) — {{one-line summary}}`.
+7. Update `docs/adr/README.md` index (only if the entry is not there yet) with `- [0001 Baseline](0001-baseline.md) — {{one-line summary}}`.
 8. Do not auto-create follow-up tasks. List them as **suggestions** in the final output.
 9. **Final output** — value-dense, scannable. Use this shape:
 
