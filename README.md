@@ -15,17 +15,29 @@ sessão, ele vira um arquivo que o agente carrega quando precisa e ignora quando
 leap-of-faith-skills/
 ├── skills/
 │   ├── engenharia/               ← como o agente trabalha
+│   │   ├── auditoria-arquitetural/   código morto, duplicação e ciclos num escopo TypeScript
+│   │   ├── debug-causa-raiz/         bug até a causa raiz antes de qualquer fix
+│   │   ├── deploy-coolify/           deploy no Coolify (OCI) com rollback por SHA
 │   │   ├── desmond/                  orquestração token-efficient (acionamento explícito)
+│   │   ├── despachar-dev/            modelo do subagente por complexidade e risco
+│   │   ├── entrevistar/              entrevista em rodadas até fechar as decisões (primitiva)
+│   │   ├── frontend-design/          direção visual de UI (Anthropic, sem alteração)
 │   │   ├── julgar-pr/                review de PR com gate de evidência e publicação única
+│   │   ├── migracao-segura-prisma-mongo/  expand/contract de schema Prisma sobre MongoDB
+│   │   ├── rebase-seguro/            rebase com backup ref e confirmação
+│   │   ├── revezar-agentes/          paralelismo e revezamento de agentes quando a cota acaba
+│   │   ├── rodar-testes/             testes certos dentro dos limites da máquina
 │   │   └── validar-skill/            gate de contribuição: segredos, estrutura, escopo
 │   ├── gestao/                   ← fluxo de trabalho e rastreabilidade
+│   │   ├── criar-task/               discovery + criação de task no ClickUp
+│   │   ├── licoes-aprendidas/        lição de engenharia de uma branch, PR ou task
+│   │   ├── onboarding-ecossistema/   config por cliente (repos, ClickUp, GCP), fora do repo
+│   │   ├── orcar-projeto/            orçamento com medição real, PERT e prêmio de risco
 │   │   ├── project-ledger/           ADRs versionados + tasks locais
-│   │   └── plane/                    ciclo de task no Plane
-│   │       ├── plane-onboarding/         setup da API key/MCP por dev
-│   │       ├── iniciar-task/             abre a task + cronômetro + executa
-│   │       ├── reportar-task/            reporta/loga tempo e custo sem fechar
-│   │       └── fechar-task/              encerra: tempo, tokens, custo, resumo
+│   │   └── release/gerar-release/    PR de release com changelog e toggles conferidos no diff
 │   └── integracoes/              ← plataformas externas
+│       ├── consultar-docs/           doc versionada via Context7
+│       ├── logs-gcp/                 observabilidade somente leitura no GCP
 │       └── meta-waba/                WhatsApp Business Platform (Cloud API/Graph API)
 ├── docs/creating-skills.md       ← como criar e documentar uma skill
 ├── CONTRIBUTING.md               ← fluxo de fork, PR e backlog de ideias
@@ -35,8 +47,8 @@ leap-of-faith-skills/
 └── LICENSE                       ← PolyForm Noncommercial 1.0.0
 ```
 
-O nome instalado é o **basename da pasta da skill** — `skills/gestao/plane/fechar-task/` vira
-`fechar-task`. O agrupamento por tema é organização do repositório, não faz parte do nome. Nomes
+O nome instalado é o **basename da pasta da skill** — `skills/gestao/release/gerar-release/` vira
+`gerar-release`. O agrupamento por tema é organização do repositório, não faz parte do nome. Nomes
 precisam ser únicos.
 
 ## Skills
@@ -46,28 +58,41 @@ precisam ser únicos.
 | Skill | O que faz |
 |---|---|
 | **`desmond`** | Modo de orquestração de acionamento explícito (`/desmond`): planeja antes de agir, despacha cada trabalho pro agente mais barato que dá conta e reserva o modelo de fronteira pra síntese e decisão. Para tarefa grande e multi-arquivo com o mínimo de tokens. |
+| **`entrevistar`** | Primitiva de perguntas (`/entrevistar <tema>`): mapeia o tema como árvore de decisões, pergunta a cada rodada só a fronteira, numera as perguntas com a recomendação na frente, resolve sozinha o que é fato e para quando a fronteira esvazia e o usuário confirma. `/spec`, `criar-task` e `desmond` chamam esta. |
 | **`julgar-pr`** | Review de PR com régua de evidência (`/julgar-pr 123 [publicar]`): roda o gate do próprio repo, passa o diff por scanner de bypass, obtém os achados pelo `/code-review`, verifica as afirmações do PR e só aceita texto que passe no `review_gate.py` (evidência obrigatória em blocker, máximo 5 nits, veredito consistente). Publica uma única review no GitHub só com `publicar`. Scripts vendorizados da the-judge (Tech Leads Club), ver `NOTICE.md`. |
+| **`revezar-agentes`** | Paralelismo e controle quando os tokens acabam (`/revezar-agentes` com `status`, `bastão`, agente/conta ou `despachar <tarefa>`): escolhe agente, conta e modelo pelo peso da tarefa, despacha workers pelo Orca com ficha de prefixo fixo e relatório em schema, passa o bastão e mantém o registro de contas e resets no ai-memory, troca de conta por menu (`revezar`), e aplica os gates (worktree sem segredo, ai-jail opcional, sem push/deploy, no máximo 2 testes por vez na máquina). Guia de uso em `GUIA.md`. |
 | **`validar-skill`** | Gate de contribuição. Audita uma skill ou o PR inteiro antes de publicar: bloqueia segredo, `.env`, chave privada, PII e dado de cliente; valida frontmatter, nome único e estrutura; reprova escopo inválido e conteúdo prejudicial. Inclui `scripts/scan.sh`. |
+| **`rodar-testes`** | Escolhe, escreve e roda os testes certos para uma mudança dentro dos limites da máquina (workers limitados, uma suíte por vez, nunca em background): detecta os comandos do repo, nomeia o invariante e reporta o que rodou e o que não rodou. |
+| **`migracao-segura-prisma-mongo`** | Expand/contract para schema Prisma sobre MongoDB (sem Migrate): classifica a mudança, ordena deploy × `db push` × backfill idempotente com dry-run, e entrega o plano para a classe de risco `schema` do PR. |
+| **`auditoria-arquitetural`** | Código morto, duplicação e ciclos de import num escopo TypeScript, com scanner `rg` + `madge` que entende DI do Nest e templates Angular; rastreia uso antes de declarar algo morto. |
+| **`debug-causa-raiz`** | Bug até a causa raiz antes de qualquer fix: reproduz, instrumenta fronteiras, uma hipótese por vez, teste que falha primeiro; três tentativas falhas viram questão de arquitetura. |
+| **`rebase-seguro`** | Rebase com backup ref, confirmação explícita, conflitos lidos dos dois lados e publicação só com `--force-with-lease` autorizado. |
+| **`despachar-dev`** | Escolhe o modelo do subagente de desenvolvimento por complexidade (C1–C3) e risco (R1–R2), mostra a ficha de despacho e mede o custo por classe (`scripts/custo.py`). `desmond` usa esta tabela. |
+| **`deploy-coolify`** | Serviço no Coolify da Auditore (OCI, ARM): imagem no GitHub Actions → GHCR → webhook, health check que testa o banco e rollback por SHA. |
+| **`frontend-design`** | Direção visual intencional ao construir ou refazer UI. Skill da Anthropic sem alteração (Apache 2.0, ver `NOTICE.md`). |
 
 ### gestao
 
 | Skill | O que faz |
 |---|---|
 | **`project-ledger`** | Decisões de engenharia (ADRs versionados em `docs/adr/`) e trabalho ativo (tasks locais, fora do git). `init` faz o bootstrap do repositório; fechar uma task gera o ADR. Sync com Notion/ClickUp só sob comando explícito. |
-| **`plane-onboarding`** | Primeiro setup do dev: coleta a API key **pessoal**, grava `~/.claude/plane_config.json` (chmod 600) e conecta o MCP do Plane. Cada dev usa a própria chave. |
-| **`iniciar-task`** | Move a task pra In Progress, inicia o cronômetro, lê objetivo e definition of done, e começa a executar. |
-| **`reportar-task`** | Comenta na task com progresso e PR; opcionalmente loga tempo e custo de IA (via `ccusage`). **Não fecha.** |
-| **`fechar-task`** | Encerra o ciclo: worklog, tokens, custo e comentário de resumo. |
+| **`onboarding-ecossistema`** | Uma vez por cliente: detecta os repos de uma pasta raiz e o harness de cada um, pergunta lista do ClickUp, campos e serviços GCP, e grava `<raiz>/.claude/ecossistema.json` + `ecossistema/*.md` — fora de qualquer repo público. |
+| **`criar-task`** | Discovery + validação + criação de task no ClickUp: enquadra o repo, lê CLAUDE.md e ADRs, faz pré-triagem (PR aberto, branch, task duplicada), pergunta o que o código não responde, projeta localmente e cria na lista configurada com assignee e link. |
+| **`licoes-aprendidas`** | A lição de engenharia que uma branch, PR ou task demonstra, ancorada em commit e arquivo:linha; destino opt-in em comentário ou nota de ADR. |
+| **`gerar-release`** | PR de release entre duas branches: PRs mergeados (inclusive empilhados, squash e rebase) cruzados com as tasks do ClickUp, e toggles conferidos no diff, não no que o PR declara. Modo preencher escreve direto num PR de release já aberto. |
+| **`orcar-projeto`** | Orçamento e proposta técnica a partir dos documentos do cliente: mede o sistema real, estima por item com PERT, forma o preço com prêmio de risco explícito e calcula o gross-up tributário. Toda linha rotulada pela origem. |
 
-Fronteira do fluxo Plane: `iniciar` (começa) → `reportar` (meio, sem fechar) → `fechar` (encerra).
-Nenhuma delas tem workspace ou Project ID fixo — tudo é resolvido em runtime a partir de
-`~/.claude/plane_config.json` e do prefixo do task ID.
+Fluxo ClickUp: `onboarding-ecossistema` (uma vez por cliente) → `criar-task` (por demanda). IDs de workspace, lista e
+campos, repos e mapa GCP ficam em `<raiz>/.claude/ecossistema.json` e `ecossistema/*.md`, nunca neste repositório —
+`validar-skill` bloqueia `ecossistema.json` e `gcp-servicos.md` no commit (o `produtos.md` não tem nome fixo: confira à mão).
 
 ### integracoes
 
 | Skill | O que faz |
 |---|---|
 | **`meta-waba`** | Referência curada da WhatsApp Business Platform: templates (incluindo header de vídeo por Resumable Upload), ciclo de vida de números, webhooks com HMAC SHA-256, Flows com endpoint criptografado, analytics, Embedded Signup/Tech Provider e códigos de erro reais. Detalhe em `references/`, com scripts em TypeScript. |
+| **`logs-gcp`** | Observabilidade somente leitura no GCP (Cloud Run, Cloud Build, Error Reporting, Firebase Hosting) enquanto não há Sentry: logs por serviço/janela/texto, revisões e tráfego, deploys recentes, grupos de erro. |
+| **`consultar-docs`** | Documentação atualizada e versionada via Context7 CLI (`npx ctx7`) antes de responder de memória, com IDs pré-resolvidos para NestJS, Prisma, Angular, RxJS, Jest e outras. |
 
 ## Começando
 

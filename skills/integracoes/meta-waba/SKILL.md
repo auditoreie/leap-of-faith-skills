@@ -1,6 +1,6 @@
 ---
 name: meta-waba
-description: Especialista em WhatsApp Business Platform (Meta Cloud API, Graph API, WABA). Cobre Embedded Signup e BISU/Tech Provider, CRUD de message templates incluindo header de vídeo via Resumable Upload, ciclo de vida de números (request_code/verify_code/register, PIN 2FA, display name), webhooks com HMAC SHA-256, QR codes, analytics (account/conversation/template/pricing), WhatsApp Flows com endpoint criptografado, Conversational Components, Block User API, business profile, commerce, e códigos de erro da Meta. Use sempre que o usuário mencionar WhatsApp Business API, WABA, Cloud API, whatsapp_business_management, message template, registrar número WhatsApp, Embedded Signup, Tech Provider, BSP, webhook WhatsApp, Resumable Upload, header_handle, ou endpoint de graph.facebook.com — mesmo quando ele descrever o problema informalmente (template rejeitado, número não registra, vídeo não sobe, webhook não chega) desde que o contexto seja integração com a plataforma WhatsApp Business da Meta.
+description: Especialista em WhatsApp Business Platform (Meta Cloud API, Graph API, WABA). Cobre Embedded Signup e BISU/Tech Provider, CRUD de message templates incluindo header de vídeo via Resumable Upload, ciclo de vida de números (request_code/verify_code/register, PIN 2FA, display name), webhooks com HMAC SHA-256, QR codes, analytics (account/conversation/template/pricing), WhatsApp Flows com endpoint criptografado, Conversational Components, Block User API, business profile, commerce, e códigos de erro da Meta. Use sempre que o usuário mencionar WhatsApp Business API, WABA, Cloud API, whatsapp_business_management, message template, registrar número WhatsApp, Embedded Signup, Tech Provider, BSP, webhook WhatsApp, Resumable Upload, header_handle, ou endpoint de graph.facebook.com — mesmo quando ele descrever o problema informalmente (template rejeitado, número não registra, vídeo não sobe, webhook não chega) desde que o contexto seja integração com a plataforma WhatsApp Business da Meta. NÃO use para o app WhatsApp Business (sem API), para o WhatsApp consumer nem para menção de passagem a WhatsApp.
 ---
 
 # Meta WABA — WhatsApp Business Platform
@@ -35,6 +35,11 @@ Pular esta skill apenas quando: a tarefa for sobre o app **WhatsApp Business** (
 5. **Retry com backoff exponencial e jitter** somente para `429` e `5xx`. Nunca em `4xx` (exceto `429`).
 6. **Logs nunca contêm token em claro** — usar redaction explícita.
 7. **Multi-tenant desde o dia zero** — todo recurso é escopado por `cliente_id` + `waba_id` + `phone_number_id`.
+
+## Token discipline e Safe-mode
+
+- Leia só o `references/*.md` da linha da tabela abaixo que a tarefa exige; nunca todos.
+- Nenhuma chamada a `graph.facebook.com` com token real, nem criação/remoção de template, número ou assinatura de webhook, sem confirmação explícita. Token nunca no chat nem em log.
 
 ## Roteamento — onde encontrar o que
 

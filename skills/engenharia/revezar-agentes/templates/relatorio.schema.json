@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Relatório do worker",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "resumo", "commits", "arquivos", "gate", "nao_verificado", "pendencias", "aprendizados"],
+  "properties": {
+    "status": { "type": "string", "enum": ["concluído", "bloqueado", "precisa de decisão"] },
+    "resumo": { "type": "string", "description": "Uma ou duas frases: o que mudou para quem usa." },
+    "commits": { "type": "array", "items": { "type": "string", "description": "<hash> <mensagem>" } },
+    "arquivos": { "type": "array", "items": { "type": "string" } },
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["comando", "resultado", "saida"],
+      "properties": {
+        "comando": { "type": "string" },
+        "resultado": { "type": "string", "enum": ["ok", "falhou", "não rodou"] },
+        "saida": { "type": "string", "description": "Últimas linhas relevantes da saída." }
+      }
+    },
+    "nao_verificado": { "type": "array", "items": { "type": "string" } },
+    "pendencias": { "type": "array", "items": { "type": "string" } },
+    "aprendizados": { "type": "array", "items": { "type": "string" }, "description": "Candidatos a memória; o orquestrador decide." }
+  }
+}

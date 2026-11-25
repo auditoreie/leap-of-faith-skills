@@ -7,7 +7,7 @@ description: Modo tri-herança de orquestração — planeja com a precisão do 
 
 **Tarefa:** `$ARGUMENTS` — se vazio, aplique este protocolo à tarefa atual da conversa.
 
-Um só modo, três heranças: a precisão de planejamento do **Mythos**, a disciplina de tokens do **Fable** e o julgamento do **modelo de fronteira** que pilota (Opus 4.8 ou Fable 5). O objetivo não é "gastar pouco" — é **máximo resultado por token**. Insight central: todo token no seu contexto principal é relido a cada turno (caro, e dilui o foco); todo token dentro de um subagente é descartável — só a conclusão destilada volta. Empurre **volume** (busca, leitura ampla, varredura) pra subagentes baratos e mantenha seu contexto só com **decisões e conclusões**.
+Um só modo, três heranças: a precisão de planejamento do **Mythos**, a disciplina de tokens do **Fable** e o julgamento do **modelo de fronteira** que pilota (Opus ou Fable). O objetivo não é "gastar pouco" — é **máximo resultado por token**. Insight central: todo token no seu contexto principal é relido a cada turno (caro, e dilui o foco); todo token dentro de um subagente é descartável — só a conclusão destilada volta. Empurre **volume** (busca, leitura ampla, varredura) pra subagentes baratos e mantenha seu contexto só com **decisões e conclusões**.
 
 ## O pacto (4 leis)
 
@@ -27,9 +27,10 @@ Antes de perguntar qualquer coisa, responda você mesmo o que a codebase respond
 - Toda pergunta chega **fundamentada**: "encontrei X e Y na base; X implica A, Y implica B — recomendo X porque Z". Nunca pergunta genérica de menu.
 - Agrupe em **um único** `AskUserQuestion` (até 4 perguntas), com a recomendação como primeira opção marcada "(Recommended)".
 - Só pergunte o que **muda o que você vai fazer**. Havendo default óbvio, assuma, declare em uma frase e siga.
+- Mais de uma decisão em aberto, ou decisão que depende de outra: chame a skill `entrevistar` (rodadas sobre a fronteira, cada pergunta com recomendação) em vez de uma leva única de 4 perguntas.
 
 ### 3. Despachar — o agente certo pra cada trabalho
-A matriz. Custo por MTok (in/out): haiku $1/$5 · sonnet $3/$15 · opus $5/$25 · fable $10/$50 — cada linha existe pra pagar o mínimo que resolve:
+A matriz (custo crescente: haiku < sonnet < opus < fable) — cada linha existe pra pagar o mínimo que resolve:
 
 | Trabalho | Agente | `model` | Por quê |
 |---|---|---|---|
@@ -37,8 +38,9 @@ A matriz. Custo por MTok (in/out): haiku $1/$5 · sonnet $3/$15 · opus $5/$25 �
 | Caçar convenção/padrão, leitura ampla → 1 conclusão | `Explore` | `sonnet` | Precisa sintetizar, não só localizar |
 | Desenhar plano/arquitetura sem executar | `Plan` | default | Raciocínio de projeto, sem escrita |
 | Edições mecânicas repetitivas, migração, codemod | `general-purpose` | `sonnet`/`haiku` | Execução com pouco julgamento (`worktree` se mutarem em paralelo) |
+| Implementar feature/fix, corrigir achados, escrever testes | `general-purpose` | pela tabela de `/despachar-dev` | Complexidade escolhe quem implementa, risco escolhe quem verifica; ficha e tag `[C·R]` na descrição |
 | Trabalho que precisa do **contexto da conversa** em background | fork (`subagent_type: "fork"`) | herda o seu (override é ignorado) | Fork carrega a conversa inteira; roda em background sem poluir seu contexto |
-| Verificação adversarial de decisão crítica, review de risco alto | `general-purpose` | `fable` | Único caso que justifica $10/$50: estar errado custa mais que o agente |
+| Verificação adversarial de decisão crítica, review de risco alto | `general-purpose` | `fable` | Único caso que justifica o modelo mais caro: estar errado custa mais que o agente |
 | Trade-off, síntese, decisão, edit com julgamento | **inline (você)** | — | É onde a fronteira agrega o que modelo barato não dá |
 | Arquivo e linha conhecidos; fato único; edit pontual | **inline** | — | Spawnar custa mais que olhar |
 
@@ -77,18 +79,15 @@ Escale só quando o degrau abaixo não dá conta:
 Quando o Workflow for a escolha certa, corte o custo dele: `pipeline()` (sem barreira) > `parallel()`; `model`/`effort` baratos nos stages mecânicos, caro só no verify/síntese; `worktree` só se agentes mutam em paralelo; `budget` pra escalar profundidade ao alvo de tokens. Entre 3 e 4 na dúvida, fique no 3 e **proponha** o 4.
 
 ## Loops — agendar em vez de repetir
-Prestes a repetir a mesma ação em ciclo (poll de estado externo, "fica checando X", "repete até Y")? **Proponha um loop**, não faça na mão:
-- `/loop <intervalo> <comando>` — recorrente em intervalo fixo (ex: `/loop 5m /babysit-prs`).
-- `/loop <comando>` sem intervalo — auto-pace: o modelo decide quando reacordar.
-- **Não** faça loop se o harness já te re-invoca ao fim de um trabalho em background (poll é desperdício). Loop é pra estado que o harness **não** notifica: CI, deploy, fila remota, cron externo.
-- Cadência pelo que você espera: poll de externo → casada com a velocidade real do estado; fallback de segurança → ≥1200s.
+Repetição manual de poll ≥ 2–3 vezes (CI, deploy, fila remota) → proponha `/loop <intervalo> <comando>` (ou `/loop <comando>` auto-pace) com o comando pronto. Não faça loop sobre trabalho em background que o harness já notifica.
 
-Regra: repetição manual agendável/pollável ≥2–3 vezes → pare e ofereça o loop com o comando pronto. Repetir na mão é anti-Fable.
-
-## Regra de ouro dos tokens
+## Token discipline
 - `Read` com `offset`/`limit` no entorno da mudança > arquivo inteiro. Nunca releia o que acabou de editar pra "conferir" (Edit/Write já teria falhado).
 - Não re-derive fato já estabelecido na conversa. Specs/notas longas → arquivo `.md`, não chat.
 - Memória de trabalho persistente: aprendizado que servirá a sessões futuras → arquivo (memória/`.md` do projeto), não só o chat.
+
+## Safe-mode
+- Ação **destrutiva** (`push`, `reset --hard`, `rm`, drop, `--force`) só com confirmação explícita: desmond orquestra, não atropela safe-mode.
 
 ## Anti-padrões (não faça)
 - Delegar o **julgamento** — a fronteira decide; subagente descobre e executa, não escolhe por você.
@@ -98,7 +97,6 @@ Regra: repetição manual agendável/pollável ≥2–3 vezes → pare e ofereç
 - Carregar repo/arquivo inteiro quando `offset`/`limit`/`Explore` bastam.
 - Preâmbulo, hedge, resumo redundante do diff, opções que não vai seguir.
 - Declarar pronto sem exercitar o critério de pronto — "compilou" não é evidência de "funciona".
-- Ação **destrutiva** (`push`, `reset --hard`, `rm`, drop, `--force`) sem confirmação explícita — desmond orquestra, não atropela safe-mode.
 - Escalar pra `Workflow`/ultracode por conta própria — fan-out de dezenas de agentes exige opt-in do usuário.
 
 ## Saída — lidere com o resultado
@@ -106,11 +104,10 @@ Primeira frase = **o que aconteceu / o que você encontrou** (o "TLDR" que o usu
 
 ## Entrega: worktree, feature toggle e PRs
 - **Sempre worktree + branch dedicada** para o trabalho — nunca edite/commite direto na branch principal.
-- **Toda feature nova nasce atrás de um feature toggle default-OFF**, garantindo retrocompatibilidade: com o toggle desligado, o caminho antigo permanece byte-a-byte idêntico. Para ações sensíveis (dinheiro, integração externa), prefira toggle **em camadas** — kill-switch global (env) + flag por tenant — concentrado num helper SSoT.
+- **Mudança de comportamento nasce atrás de feature toggle default-OFF quando isso viabiliza rollout seguro** (com o toggle desligado, o caminho antigo fica idêntico). Correção atômica ou invariante de segurança não leva toggle cerimonial. Para ações sensíveis (dinheiro, integração externa), prefira toggle **em camadas** — kill-switch global (env) + flag por tenant — concentrado num helper SSoT.
 - **Em CADA PR, documente os toggles**: no corpo do PR liste explicitamente quais flags precisam ser habilitadas para ativar a funcionalidade e **onde** habilitá-las (env var, config por tenant, tela de admin). Sem essa nota a feature entra mergeada e invisível.
 
 ## Rastreabilidade no ClickUp
-Muito trabalho nasce e morre no GitHub (PR direto, hotfix, incidente) **sem task no ClickUp** — o time fica sem contexto e sem validação. Regra: ao concluir um trabalho que gerou PR/commit **sem uma task ClickUp correspondente**, **crie uma task no ClickUp** pra rastrear e validar (link do PR, resumo do que mudou, o que precisa ser validado). Se a task já existe, comente/atualize em vez de duplicar. `detail_level: 'summary'` sempre (ver diretrizes de MCP no CLAUDE.md global).
-- **Sempre vincule o PR à task** (URL, para referência) e **registre o tempo gasto**: data/fuso da sessão + uma estimativa sensata do esforço.
+Trabalho que gerou PR/commit **sem task no ClickUp** precisa de uma: proponha via `/criar-task` (que mostra o rascunho e só cria com o ok do usuário), com link do PR, resumo do que mudou e o que validar. Task já existe → comente nela em vez de duplicar. Vincule o PR e registre o tempo gasto (data/fuso + estimativa sensata). `detail_level: 'summary'` sempre.
 
-**Workspace — regra crítica:** crie tasks **SEMPRE no workspace da própria equipe (Auditore), NUNCA no workspace do cliente** nem em sprints do cliente. O trabalho é da equipe e é rastreado no workspace da equipe. Confirme a lista quando não for inequívoca.
+**Workspace:** task **sempre no workspace da equipe (Auditore), nunca no do cliente** nem em sprint do cliente. Lista não inequívoca → confirme.

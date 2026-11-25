@@ -7,7 +7,22 @@
 
 set -euo pipefail
 
-REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$SCRIPT_DIR"
+
+# Os links sempre apontam para o checkout principal, nunca para uma worktree: worktree
+# some no cleanup e deixa as skills quebradas (ou presas numa branch não mesclada).
+common_git="$(git -C "$SCRIPT_DIR" rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)"
+if [[ "$common_git" == */.git ]]; then
+  REPO_DIR="${common_git%/.git}"
+  if [[ "$REPO_DIR" != "$SCRIPT_DIR" ]]; then
+    echo "Rodando de uma worktree: os links vão para o checkout principal em $REPO_DIR."
+  fi
+  branch="$(git -C "$REPO_DIR" branch --show-current 2>/dev/null || true)"
+  if [[ "$branch" != "main" ]]; then
+    echo "Aviso: o checkout principal está em '${branch:-HEAD destacado}', não em 'main'. As skills seguem essa branch." >&2
+  fi
+fi
 SKILLS_SRC="$REPO_DIR/skills"
 SKILLS_DEST="$HOME/.claude/skills"
 
@@ -24,7 +39,9 @@ relinked=0
 seen=" "  # lista de nomes já vistos (compatível com bash 3.2, sem arrays assoc.)
 
 # Cada diretório que contém um SKILL.md é uma skill (em qualquer profundidade).
-while IFS= read -r skillmd; do
+# fd 3 para a lista de skills: o `read` do prompt de conflito usa o stdin de verdade,
+# não a próxima linha do find (bug que pulava a skill seguinte a cada conflito).
+while IFS= read -r -u 3 skillmd; do
   skill_dir="$(cd "$(dirname "$skillmd")" && pwd)"
   name="$(basename "$skill_dir")"
   target="$SKILLS_DEST/$name"
@@ -58,7 +75,20 @@ while IFS= read -r skillmd; do
     ln -s "$skill_dir" "$target"
     created=$((created + 1))
   fi
-done < <(find "$SKILLS_SRC" -name SKILL.md -type f | sort)
+done 3< <(find "$SKILLS_SRC" -name SKILL.md -type f | sort)
+
+# Links quebrados que apontavam para este repo (skill removida ou renomeada): oferece remover.
+removed=0
+for link in "$SKILLS_DEST"/*; do
+  [[ -L "$link" && ! -e "$link" ]] || continue
+  dest="$(readlink "$link")"
+  [[ "$dest" == "$REPO_DIR/"* ]] || continue
+  read -r -p "Link quebrado $(basename "$link") -> $dest. Remover? [y/N] " ans
+  if [[ "$ans" =~ ^[Yy]$ ]]; then
+    rm "$link"
+    removed=$((removed + 1))
+  fi
+done
 
 # Gate de validação: todo commit neste repo passa pelo scan antes de entrar.
 if [[ -d "$REPO_DIR/.git" && -d "$REPO_DIR/.githooks" ]]; then
@@ -71,6 +101,7 @@ if [[ -d "$REPO_DIR/.git" && -d "$REPO_DIR/.githooks" ]]; then
 fi
 
 echo ""
-echo "Resumo: $created criado(s), $relinked re-linkado(s), $skipped pulado(s)."
+echo "Resumo: $created criado(s), $relinked re-linkado(s), $removed removido(s), $skipped pulado(s)."
+echo "Primeira vez numa pasta de cliente? Abra o Claude nela e rode /onboarding-ecossistema (gera <raiz>/.claude/ecossistema.json, fora de repo público)."
 echo "Skills em $SKILLS_DEST:"
 ls -1 "$SKILLS_DEST" | sed 's/^/  - /'
