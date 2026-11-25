@@ -61,6 +61,9 @@ O que ler, o que não ler, o que é lazy-load.
 ## Safe-mode
 O que a skill nunca faz sozinha.
 
+## Fallback
+O que faz quando falta pré-requisito (auth, binário, MCP, config): informa, pede autorização, segue parcial.
+
 ## Passos
 Numerados, na ordem, com o comando concreto de cada um.
 
@@ -122,6 +125,9 @@ modelo não se distrair.
 5. **Output com valor percebido** — a operação principal termina com um resumo curto: o que mudou e
    o que vale fazer em seguida.
 6. **Fronteira declarada** — diga de qual skill vizinha você se diferencia, nos dois sentidos.
+7. **Fallback explícito** — pré-requisito ausente não encerra a skill: ela diz o que faltou e como resolver, pede
+   autorização e prossegue com o que dá, marcando no output o que ficou sem verificar. Nunca para em silêncio;
+   nunca transforma "não verificado" em "ok".
 
 ## Como documentar bem (a parte que os agentes erram)
 
