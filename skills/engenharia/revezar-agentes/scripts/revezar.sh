@@ -41,6 +41,7 @@ harness_of() {
     claude) echo claude ;;
     codex) echo codex ;;
     grok) echo grok ;;
+    agy) echo antigravity ;;
     *) return 1 ;;
   esac
 }
@@ -57,7 +58,7 @@ cmd_status() { bash "$DIR/contas.sh"; }
 
 cmd_login() {
   local agente="${1:-}" conta="${2:-}"
-  [ -n "$agente" ] && [ -n "$conta" ] || die "uso: revezar login <claude|codex|grok> <conta>"
+  [ -n "$agente" ] && [ -n "$conta" ] || die "uso: revezar login <claude|codex|grok> <conta> (cursor-agent e agy: login no próprio CLI)"
   case "$agente" in
     claude) local d="${CCA_HOME:-$HOME/.claude-accounts}/$conta"; [ "$conta" = default ] && d="$HOME/.claude"; mkdir -p "$d"
             CLAUDE_CONFIG_DIR="$d" claude auth login ;;
@@ -66,6 +67,7 @@ cmd_login() {
     grok)   local d="$HOME/.grok-$conta"; [ "$conta" = default ] && d="$HOME/.grok"; mkdir -p "$d"
             GROK_HOME="$d" grok login ;;
     cursor-agent) die "cursor-agent tem uma conta por máquina: use 'cursor-agent login'" ;;
+    agy) die "agy tem uma conta por máquina: rode 'agy' e conclua o login do Google" ;;
     *) die "agente desconhecido: $agente" ;;
   esac
 }
@@ -146,7 +148,7 @@ cmd_open() {
 }
 
 case "${1:-}" in
-  -h|--help) sed -n '2,10p' "$SELF" | sed 's/^# \{0,1\}//' ;;
+  -h|--help) sed -n '2,14p' "$SELF" | sed 's/^# \{0,1\}//' ;;
   status) cmd_status ;;
   slot) shift; exec bash "$DIR/slot.sh" "$@" ;;
   login) shift; cmd_login "$@" ;;

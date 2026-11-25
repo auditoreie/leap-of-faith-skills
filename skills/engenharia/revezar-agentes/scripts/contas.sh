@@ -77,6 +77,13 @@ else
   line "cursor-agent" "-" "não instalado"
 fi
 
+if has agy; then
+  # Uma conta por máquina; o agy não tem comando de status de login que não chame o modelo.
+  line "agy" "default" "instalado (login não verificável sem chamar o modelo)"
+else
+  line "agy" "-" "não instalado"
+fi
+
 if [ "$TSV" = 0 ]; then
   if has ai-memory; then
     if ai-memory status >/dev/null 2>&1; then

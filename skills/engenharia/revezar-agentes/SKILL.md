@@ -1,6 +1,6 @@
 ---
 name: revezar-agentes
-description: Mantém o trabalho andando e paralelo quando o limite de uso de um agente acaba — escolhe agente, conta e modelo pelo peso da tarefa (Claude em várias contas, Codex, Grok, cursor-agent, e um degrau pago por token), passa o bastão pelo ai-memory em vez do histórico, troca de conta por menu (`revezar`) sem variável de ambiente à mão, despacha workers pelo Orca ou em worktrees próprias com ficha de prefixo fixo e relatório em schema, mantém o registro de contas e horários de reset para não deixar a cota acabar, e aplica os gates (worktree sem segredo, sem push/deploy, no máximo 2 testes por vez na máquina). Use quando o usuário disser "acabou o limite", "bati no limite", "troca de agente", "troca de conta", "continua no codex", "passa pro grok", "reveza", "paraleliza isso", "distribui entre os agentes", "quanto de cota sobrou", "/revezar-agentes [status|bastão|<agente|conta>|despachar <tarefa>]", "hit the limit", "switch agent". NÃO use para subagentes da própria sessão (isso é /desmond) nem para a mecânica de supervisão de workers do Orca, que esta skill chama (isso é orchestration).
+description: Mantém o trabalho andando e paralelo quando o limite de uso de um agente acaba — escolhe agente, conta e modelo pelo peso da tarefa (Claude em várias contas, Codex, Grok, cursor-agent, agy, e um degrau pago por token), passa o bastão pelo ai-memory em vez do histórico, troca de conta por menu (`revezar`) sem variável de ambiente à mão, despacha workers pelo Orca ou em worktrees próprias com ficha de prefixo fixo e relatório em schema, mantém o registro de contas e horários de reset para não deixar a cota acabar, e aplica os gates (worktree sem segredo, sem push/deploy, no máximo 2 testes por vez na máquina). Use quando o usuário disser "acabou o limite", "bati no limite", "troca de agente", "troca de conta", "continua no codex", "passa pro grok", "reveza", "paraleliza isso", "distribui entre os agentes", "quanto de cota sobrou", "/revezar-agentes [status|bastão|<agente|conta>|despachar <tarefa>]", "hit the limit", "switch agent". NÃO use para subagentes da própria sessão (isso é /desmond) nem para a mecânica de supervisão de workers do Orca, que esta skill chama (isso é orchestration).
 ---
 
 # revezar-agentes
@@ -61,8 +61,8 @@ Paralelismo e controle mesmo quando os tokens acabam. Três camadas, cada uma co
 
 | Peso | Exemplos | Classe | Conferência |
 |---|---|---|---|
-| Leve | busca, renomear, lint, doc, teste seguindo padrão pronto | menor (Claude Haiku/Sonnet, cursor-agent, Grok rápido) | gate do repo |
-| Médio | feature com spec fechada, bug com causa conhecida, refactor localizado | Codex, Claude Sonnet, Grok | orquestrador lê o diff |
+| Leve | busca, renomear, lint, doc, teste seguindo padrão pronto | menor (Claude Haiku/Sonnet, cursor-agent, Grok rápido, agy com Gemini Flash) | gate do repo |
+| Médio | feature com spec fechada, bug com causa conhecida, refactor localizado | Codex, Claude Sonnet, Grok, agy (Gemini 4 Hydrogen, piloto) | orquestrador lê o diff |
 | Pesado | dinheiro, segurança, multi-tenant, schema/migração, arquitetura, causa desconhecida | Claude maior (Opus/Fable) | revisão cruzada por outro fornecedor |
 
 Ao bater o limite: **mesma classe em outra conta → mesma classe em outro fornecedor → classe abaixo
@@ -111,7 +111,7 @@ revezar <agente> <conta> <workstream>     # direto
 O `revezar` passa a conta ao agente, abre pelo `ai-memory run` na mesma linha de trabalho e, se
 existir `bastoes/<workstream>.md` naquele projeto, já manda o agente ler o bastão e seguir do próximo
 passo. Ninguém digita variável de ambiente. No Orca, Claude e Codex também trocam pela tela de contas
-(`orca account select`); Grok e cursor-agent só pelo `revezar`.
+(`orca account select`); Grok, cursor-agent e agy só pelo `revezar`.
 
 ### 5. Despachar em paralelo
 

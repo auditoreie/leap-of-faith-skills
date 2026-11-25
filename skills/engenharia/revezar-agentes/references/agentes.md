@@ -1,11 +1,12 @@
 # Comandos por agente
 
 Leia só a seção do CLI que vai usar. Flags conferidas na ajuda local de cada CLI (Claude Code,
-Codex 0.165, Grok 1.0.70, cursor-agent 2026.10, ai-memory 3.4.4, Orca). Versões novas mudam flags:
+Codex 0.165, Grok 1.0.70, cursor-agent 2026.10, agy 1.5.11, ai-memory 3.4.4, Orca). Versões novas mudam flags:
 se uma falhar, rode `<cli> --help` antes de improvisar. Itens marcados **(piloto)** não foram
 provados ponta a ponta; o passo 6 do `SKILL.md` prova. Piloto sem jail em 10/11/2026: Codex
 (default), Claude (auditore) e cursor-agent aprovados (conta certa, escrita só na worktree, gate por
-`revezar slot`, relatório no schema); Grok aguarda login (`revezar login grok default`).
+`revezar slot`, relatório no schema); Grok aguarda login (`revezar login grok default`); agy
+(instalado em 18/11/2026) aguarda piloto.
 
 `$FICHA` = conteúdo de `templates/ficha.md` preenchida. `$WT` = caminho da worktree do worker.
 `$SCHEMA` = `templates/relatorio.schema.json`. `$REL` = `$HOME/.cache/revezar/<slug>-<AAAAMMDD-HHMM>.json`,
@@ -38,6 +39,7 @@ abaixo e passa a certa ao agente.
 | codex | `~/.codex-<conta>` (`~/.codex` = default) **(piloto)** | `revezar login codex <conta>` |
 | grok | `~/.grok-<conta>` (`~/.grok` = default, ou `GROK_HOME`) **(piloto)** | `revezar login grok <conta>` |
 | cursor-agent | uma conta por máquina | `cursor-agent login` |
+| agy | uma conta por máquina (`~/.gemini`) **(piloto)** | rodar `agy` e concluir o login do Google |
 
 Todo worker abre num terminal por `revezar [--jail] <agente> <conta> <workstream>` (conta certa;
 isolado no ai-jail quando instalado). cursor-agent tem uma conta por máquina, por desenho do CLI: a troca de conta
@@ -133,6 +135,18 @@ resto. O Claude não tem flag de schema no `-p`; o schema vai no fim da ficha.
 | Retomar | `cursor-agent --resume <id>`, ou `revezar cursor-agent default` (sessão nova) |
 | Login | `cursor-agent status` |
 | Nunca | `--force`, `--yolo`, `--approve-mcps` |
+
+## agy (Google Antigravity CLI)
+
+| Item | Valor |
+|---|---|
+| Argumentos nativos | `-p "$FICHA" --output-format json --json-schema "$SCHEMA" --model <modelo> --mode accept-edits --sandbox` (rodar de dentro de `$WT`: o agy não tem flag de pasta de trabalho) **(piloto)** |
+| ai-memory | harness `antigravity` no `ai-memory run` (o `revezar agy default <workstream>` já usa); hooks: `ai-memory install-hooks --agent antigravity-cli` (`~/.gemini/config/hooks.json`) |
+| Modelos | `agy models`. Em 18/11/2026: `gemini-4-hydrogen-{low,medium,high,xhigh}`, `gemini-4-carbon-*`, `gemini-4-argon-*`, `gemini-pro-orchestrator`, `gemini-3.8-flash-*` |
+| Regras globais | `~/.gemini/AGENTS.md` (symlink para `~/dotfiles/agents/AGENTS.md`) |
+| Retomar | `agy --conversation <id>` (`-c` continua a mais recente da pasta e pode ser outra) |
+| Login | sem comando de status que não chame o modelo; deslogado, o `-p` espera 60 s pelo login e sai com erro |
+| Nunca | `--dangerously-skip-permissions` |
 
 ## ai-memory (todos)
 
